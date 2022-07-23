@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "rate-frontend",
-    "slug": "rate-frontend",
+    "name": "alrayhan",
+    "slug": "alrayhan",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -21,10 +21,8 @@
       "supportsTablet": true
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
-      }
+      "package": "com.abuodehbros.alrayhan",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"

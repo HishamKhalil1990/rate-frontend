@@ -54,6 +54,8 @@ export default function LoginScreen({ navigation }) {
             const storeData = async () => {
               try {
                 await AsyncStorage.setItem("username", user);
+                setUser("");
+                setPass("");
                 navigation.navigate("Rate");
               } catch (e) {
                 console.log(e);

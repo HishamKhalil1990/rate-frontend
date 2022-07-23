@@ -27,7 +27,7 @@ const getUser = async (username) => {
 
 const saveRate = async (data) => {
   return axios({
-    url: "/get-user",
+    url: "/save-rate",
     baseURL,
     method: "post",
     headers: {
@@ -36,8 +36,8 @@ const saveRate = async (data) => {
     data: JSON.stringify(data),
   })
     .then((msg) => {
-      console.log(msg);
-      return msg;
+      console.log(msg.data);
+      return msg.data;
     })
     .catch((err) => {});
 };
