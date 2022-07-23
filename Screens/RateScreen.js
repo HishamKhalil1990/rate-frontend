@@ -187,7 +187,9 @@ export default function RateScreen({ navigation }) {
                     onPress={() => setChecked1("1")}
                   />
                 </View>
-                <Text style={{ fontSize: 15, color: "#fff" }}>Question 1</Text>
+                <Text style={{ fontSize: 15, color: "#fff" }}>
+                  هل المحل نظيف
+                </Text>
               </View>
               <View
                 style={{
@@ -219,7 +221,9 @@ export default function RateScreen({ navigation }) {
                     onPress={() => setChecked2("1")}
                   />
                 </View>
-                <Text style={{ fontSize: 15, color: "#fff" }}>Question 2</Text>
+                <Text style={{ fontSize: 15, color: "#fff" }}>
+                  هل الخدمه جيده
+                </Text>
               </View>
               <View
                 style={{
@@ -251,7 +255,9 @@ export default function RateScreen({ navigation }) {
                     onPress={() => setChecked3("1")}
                   />
                 </View>
-                <Text style={{ fontSize: 15, color: "#fff" }}>Question 3</Text>
+                <Text style={{ fontSize: 15, color: "#fff" }}>
+                  هل الموظفين ملتزمين بتعليمات الاداره
+                </Text>
               </View>
               <View
                 style={{
@@ -283,7 +289,9 @@ export default function RateScreen({ navigation }) {
                     onPress={() => setChecked4("1")}
                   />
                 </View>
-                <Text style={{ fontSize: 15, color: "#fff" }}>Question 4</Text>
+                <Text style={{ fontSize: 15, color: "#fff" }}>
+                  هل البضائع متوفره بشكل كامل ومرتبه باماكنها
+                </Text>
               </View>
               <View
                 style={{
@@ -315,7 +323,9 @@ export default function RateScreen({ navigation }) {
                     onPress={() => setChecked5("1")}
                   />
                 </View>
-                <Text style={{ fontSize: 15, color: "#fff" }}>Question 5</Text>
+                <Text style={{ fontSize: 15, color: "#fff" }}>
+                  هل الاسعار بارزه للعميل بشكل واضح
+                </Text>
               </View>
             </View>
             <View
