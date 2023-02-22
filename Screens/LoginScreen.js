@@ -14,16 +14,15 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome } from "@expo/vector-icons";
 import * as apis from "../apis/apis";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Loader from "../Component/Loader";
 
 const dim = Dimensions.get("window").width * 0.2;
-const height = Dimensions.get("window").height;
 
 export default function LoginScreen({ navigation }) {
-  const [user, setUser] = useState();
-  const [pass, setPass] = useState();
+  const [user, setUser] = useState("");
+  const [pass, setPass] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [spinner, setSpinner] = useState(true);
 
   function showPassword(value) {
     setShowPass(value);
@@ -32,9 +31,15 @@ export default function LoginScreen({ navigation }) {
   useEffect(() => {
     const getData = async () => {
       try {
-        const value = await AsyncStorage.getItem("username");
-        if (value !== null) {
-          navigation.navigate("Rate");
+        const username = await AsyncStorage.getItem("username");
+        if (username !== null) {
+          const data = await apis.getUser(user,pass);
+          if (data.status == "success") {
+            navigation.navigate("Rate",{
+              username:username,
+              data:data.data
+            });
+          }
         }
       } catch (e) {
         console.log(e);
@@ -44,32 +49,30 @@ export default function LoginScreen({ navigation }) {
   }, []);
 
   async function submit() {
-    if (user && pass) {
-      if (user.length > 0 && pass.length > 0) {
-        setLoading(true);
-        const password = await apis.getUser(user);
-        if (password) {
-          setLoading(false);
-          if (password == pass) {
-            const storeData = async () => {
-              try {
-                await AsyncStorage.setItem("username", user);
-                setUser("");
-                setPass("");
-                navigation.navigate("Rate");
-              } catch (e) {
-                console.log(e);
-              }
-            };
-            storeData();
-          } else {
-            alert("Invalid Username or Password");
+    if (user != "" && pass != "") {
+      setLoading(true);
+      const data = await apis.getUser(user,pass);
+      if (data.status == "success") {
+        setLoading(false);
+        const storeData = async () => {
+          try {
+            await AsyncStorage.setItem("username", user);
+            setUser("");
+            setPass("");
+            navigation.navigate("Rate",{
+              username:user,
+              data:data.data
+            });
+          } catch (e) {
+            alert("Internal error! please try again");
           }
-        }
-      } else {
-        alert("fill all fields");
+        };
+        storeData(); 
+      }else {
+        setLoading(false);
+        alert("Invalid Username or Password");
       }
-    } else {
+    } else {  
       alert("fill all fields");
     }
   }
@@ -78,21 +81,7 @@ export default function LoginScreen({ navigation }) {
     <SafeAreaProvider>
       <SafeAreaView>
         <View style={styles.screen}>
-          <View style={styles.loadingContainer}>
-            {loading ? (
-              <View style={styles.loading}>
-                <View style={styles.loadingInner}>
-                  {spinner ? (
-                    <ActivityIndicator size="large" color="#082032" />
-                  ) : (
-                    <View>Done</View>
-                  )}
-                </View>
-              </View>
-            ) : (
-              <></>
-            )}
-          </View>
+        <Loader loading={loading} />
           {/* <Image style={styles.image} source={require("../img/logo.png")} /> */}
           <View style={styles.userView}>
             <FontAwesome name="user-circle" size={dim * 0.85} color="black" />
@@ -142,27 +131,6 @@ export default function LoginScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  loadingContainer: {
-    position: "relative",
-    width: "100%",
-  },
-  loading: {
-    position: "absolute",
-    top: height * 0.15,
-    height: height * 0.3,
-    left: "10%",
-    width: "80%",
-    backgroundColor: "#fff",
-    borderRadius: 15,
-    zIndex: 3,
-  },
-  loadingInner: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100%",
-    width: "100%",
-  },
   screen: {
     height: "100%",
     justifyContent: "center",

@@ -1,382 +1,540 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Text,
   StyleSheet,
   View,
+  Alert,
   Image,
+  Button,
   Dimensions,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator,
+  RefreshControl,
   KeyboardAvoidingView,
 } from "react-native";
 import { RadioButton } from "react-native-paper";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import * as apis from "../apis/apis";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { set } from "react-native-reanimated";
+import { createStackNavigator,CardStyleInterpolators, } from "@react-navigation/stack";
+import DateTimePicker from '@react-native-community/datetimepicker';
+import DropDownPicker from 'react-native-dropdown-picker'
+import SwipeableFlatList from 'react-native-swipeable-list'
+import { Entypo } from '@expo/vector-icons';
+import { FontAwesome5 } from '@expo/vector-icons'; 
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Octicons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
+import { Fontisto } from '@expo/vector-icons';
+import Loader from '../Component/Loader'
 
-const dim = Dimensions.get("window").width * 0.2;
 const width = Dimensions.get("window").width;
 const height = Dimensions.get("window").height;
+const Stack = createStackNavigator();
 
-export default function RateScreen({ navigation }) {
-  const [username, setUsername] = useState();
-  const [warehouse, setWarehouse] = useState();
-  const [visit, setVisit] = useState();
-  const [checked1, setChecked1] = useState("1");
-  const [checked2, setChecked2] = useState("1");
-  const [checked3, setChecked3] = useState("1");
-  const [checked4, setChecked4] = useState("1");
-  const [checked5, setChecked5] = useState("1");
-  const [text, setText] = useState();
+export default function RateScreen({ navigation, route }) {
+  const [username, setUsername] = useState(route.params.username);
   const [loading, setLoading] = useState(false);
-  const [spinner, setSpinner] = useState(true);
+  const [fetcheddata, setFetchedData] = useState(route.params.data)
+  const [data, setData] = useState({data : []})
+  const [datePicker, setDatePicker] = useState(false);
+  const [date, setDate] = useState(new Date());
+  const [timePicker, setTimePicker] = useState(false);
+  const [time, setTime] = useState(new Date(Date.now()));
+  const [branchOpen, setBranchOpen] = useState(false);
+  const [branchValue, setBranchValue] = useState(null);
+  const [branch, setBranch] = useState([]);
+  const [noOfemployee, setNoOfemployee] = useState(1);
+  const [names, setNames] = useState([]);
 
   useEffect(() => {
-    const getData = async () => {
-      try {
-        const value = await AsyncStorage.getItem("username");
-        if (value !== null) {
-          setUsername(value);
-        }
-      } catch (e) {
-        console.log(e);
-      }
-    };
-    getData();
+    branchesList()
   }, []);
 
-  async function submit() {
-    if (warehouse && visit) {
-      const answers = checked1 + checked2 + checked3 + checked4 + checked5;
-      const data = {
-        warehouse,
-        visit,
-        answers,
-        note: text,
-        username,
-      };
-      console.log(data);
-      setLoading(true);
-      const msg = await apis.saveRate(data);
-      if (msg.msg == "added") {
-        setLoading(false);
-        setWarehouse(undefined);
-        setVisit(undefined);
-        setText(undefined);
-        setChecked1("1");
-        setChecked2("1");
-        setChecked3("1");
-        setChecked4("1");
-        setChecked5("1");
-        alert("Done");
-      } else {
-        setLoading(false);
-        alert("Error");
+  useEffect(() => {
+    setBranchValue(null)
+      setDate(new Date())
+      setDatePicker(false)
+      setTimePicker(new Date(Date.now()))
+      setTimePicker(false)
+      setNoOfemployee(1)
+      setNames([])
+      branchesList()
+  }, [fetcheddata]);
+
+  const branchesList = () => {
+    const branches = fetcheddata.branches.map(branch => {
+      return {
+        label: branch[0], 
+        value: branch[0]
       }
-    }
+    })
+    setBranch(branches)
   }
 
   async function logOut() {
-    const storeData = async () => {
-      try {
-        await AsyncStorage.removeItem("username");
-        navigation.navigate("Login");
-      } catch (e) {
-        console.log(e);
-      }
-    };
-    storeData();
+    Alert.alert(
+      'Logout',
+      'هل انت متأكد من الخروج ؟',
+      [
+        {
+          text: 'Cancel',
+          onPress: () => {
+            return null;
+          },
+        },
+        {
+          text: 'Confirm',
+          onPress: () => {
+            AsyncStorage.clear();
+            navigation.navigate("Login");
+          },
+        },
+      ],
+      {cancelable: false},
+    );
   }
-  return (
-    <SafeAreaProvider>
-      <SafeAreaView>
-        <KeyboardAvoidingView>
-          <View style={styles.screen}>
-            <View style={styles.loadingContainer}>
-              {loading ? (
-                <View style={styles.loading}>
-                  <View style={styles.loadingInner}>
-                    {spinner ? (
-                      <ActivityIndicator size="large" color="#082032" />
-                    ) : (
-                      <View>Done</View>
-                    )}
+
+  const goToRateInfo = () => {
+    if(branchValue == null){
+      alert('الرجاء اختيار فرع')
+    }else if(names.length < noOfemployee){
+      alert('الرجاء تعبئة اسماء الموظفين كاملة')
+    }else{
+      navigation.navigate("RateInfo")
+    }
+  }
+
+  const clear = async () => {
+    setLoading(true)
+    apis.getBranches(username)
+    .then((data) => {
+      setLoading(false)
+      if (data.status == "success") {
+        setFetchedData(data.data)
+      }
+    });
+  }
+
+  const showDatePicker = () => {
+    setDatePicker(true);
+  };
+ 
+  const showTimePicker = () => {
+    setTimePicker(true);
+  };
+
+  const onDateSelected = (event, value) => {
+    setDatePicker(false);
+    setDate(value);
+  };
+ 
+  const onTimeSelected = (event, value) => {
+    setTimePicker(false);
+    setTime(value);
+  };
+
+  const getTimeFormat = (time) => {
+    let hours = time.getHours();
+    let minutes = time.getMinutes();
+    let ampm = hours >= 12 ? 'pm' : 'am';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    minutes = minutes < 10 ? '0'+minutes : minutes;
+    let strTime = hours + ':' + minutes + ' ' + ampm;
+    return strTime;
+  }
+
+  const add = () => {
+    let no = noOfemployee
+    no += 1
+    setNoOfemployee(no)
+  }
+
+  const sub = () => {
+    let no = noOfemployee
+    no -= 1
+    if(no < 1){
+      no = 1
+      alert('عدد الموظفين ينبغي ان يكون اكثر من واحد')
+    }else if(no < names.length){
+      alert('الاسماء المدخلة يجب ان تساوي عدد الموظفين')
+    }else{
+      setNoOfemployee(no)
+    }
+  }
+
+  const Item = ({item, backgroundColor, textColor, deleteItem}) => {
+    return (
+      <>
+        <View style={styles.item}>
+          <View style={styles.avatar}>
+            <MaterialCommunityIcons name="account" size={30} color="black" />
+          </View>
+          <View style={styles.messageContainer}>
+            <Text style={styles.name} numberOfLines={2}>
+              {item.name}
+            </Text>
+          </View>
+        </View>
+        <View />
+      </>
+    );
+  };
+
+  const extractItemKey = (item) => {
+    return item.id.toString();
+  };
+
+  const deleteItem = (itemId) => {
+    let allNames = [...names];
+    allNames = allNames.filter(item => item.id !== itemId);
+    return setNames(allNames);
+  };
+
+  const editItem = () => {
+
+  }
+
+  const QuickActions = (index, item) => {
+    return (
+      <View style={styles.qaContainer}>
+        <View style={[styles.button, styles.button1]}>
+          <TouchableOpacity onPress={() => editItem(item.id)}>
+            <Feather name="edit" size={30} color="#fff" />
+          </TouchableOpacity>
+        </View>
+        <View style={[styles.button, styles.button2]}>
+          <TouchableOpacity onPress={() => deleteItem(item.id)}>
+            <MaterialIcons name="delete" size={30} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
+  const renderItemSeparator = ()=> {
+    return <View style={styles.itemSeparator} />;
+  }
+
+  const VisitInfoScreen = () => {
+
+    const [inputName, setInputName] = useState("");
+
+    const addName = () => {
+      let allNames = [...names]
+      if(inputName != ""){
+        if(allNames.length < noOfemployee){
+          const newName = {
+            name:inputName,
+            id:allNames.length + 1
+          }
+          allNames.push(newName)
+          setNames(allNames)
+        }else{
+          alert('عدد الاسماء المدخلة اكثر من عدد الموظفين!')
+        }
+      }else{
+        alert('الرجاء ادخال اسم الموظف اولا!')
+      }
+    }
+
+    return (
+        <View
+          style={styles.screen}
+        >
+          <Loader loading={loading} />
+          <KeyboardAvoidingView enabled>
+            <View style={[styles.itemOutterView,{marginTop:10}]}>
+              <View>
+                <Text style={styles.itemtextView}>
+                  Branch
+                </Text>
+              </View>
+                <DropDownPicker
+                  open={branchOpen}
+                  value={branchValue}
+                  items={branch}
+                  setOpen={setBranchOpen}
+                  setValue={setBranchValue}
+                  setItems={setBranch}
+                  placeholder="Select Branch"
+                  // onSelectItem={(item) => alert(branchValue)}
+                  containerStyle={{height: 50}}
+                  zIndex={3000}
+                  zIndexInverse={1000}
+                />
+            </View>
+            <View style={styles.dateOutterView}>
+              <View style={styles.dataInnerView}>
+                <View>
+                  <Text style={styles.itemtextView}>
+                    Date
+                  </Text>
+                </View>
+                <View style={styles.itemInputView}>
+                  <View style={{width:'60%'}}>
+                    <Text style={styles.dateAndTime}>
+                     {date.toLocaleDateString('en-GB')}
+                    </Text>
+                  </View>
+                  <View style={{width:'40%'}}>
+                    <TouchableOpacity 
+                      style={styles.dateAndTimeBtu}
+                      onPress={showDatePicker}
+                    >
+                      <Entypo name="calendar" size={24} color="black" />
+                    </TouchableOpacity>
                   </View>
                 </View>
-              ) : (
-                <></>
-              )}
+              </View>
+              <View style={styles.dataInnerView}>
+                <View>
+                  <Text style={styles.itemtextView}>
+                    Time
+                  </Text>
+                </View>
+                <View style={styles.itemInputView}>
+                <View style={{width:'60%'}}>
+                    <Text style={styles.dateAndTime}>
+                     {getTimeFormat(time)}
+                    </Text>
+                  </View>
+                  <View style={{width:'40%'}}>
+                    <TouchableOpacity 
+                      style={styles.dateAndTimeBtu}
+                      onPress={showTimePicker}
+                    >
+                      <FontAwesome5 name="clock" size={24} color="black" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
             </View>
-            <View
-              style={{
-                width: width * 0.95,
-                alignItems: "flex-end",
-                marginRight: 20,
-              }}
-            >
-              <Text style={styles.labelTextUser}>Branch Name</Text>
-              <TextInput
-                style={styles.inputUser}
-                placeholder={"Name"}
-                value={warehouse}
-                onChangeText={(text) => setWarehouse(text)}
-                textAlign={"right"}
-                editable={true}
+            <View style={styles.itemOutterView}>
+              <View>
+                <Text style={styles.itemtextView}>
+                  No. of Employees
+                </Text>
+              </View>
+              <View style={styles.addAndSubOutterView}>
+                <TouchableOpacity 
+                  style={styles.addAndSubBtu}
+                  onPress={add}
+                >
+                  <View style={styles.addAndSubView}>
+                    <FontAwesome5 name="plus" size={24} color="black" />
+                  </View>
+                </TouchableOpacity>
+                <View style={styles.noOfemployeeView}>
+                  <Text style={styles.noOfemployeeText}>
+                    {noOfemployee}
+                  </Text>
+                </View>
+                <TouchableOpacity 
+                  style={styles.addAndSubBtu}
+                  onPress={sub}
+                >
+                  <View style={styles.addAndSubView}>
+                  <MaterialCommunityIcons name="minus-thick" size={24} color="black" />
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </View>
+            <View style={styles.itemOutterView}>
+              <View>
+                <Text style={styles.itemtextView}>
+                  Employees Names
+                </Text>
+              </View>
+              <View style={styles.employeeInputView}>
+                <TextInput 
+                  style={styles.employeeInput}
+                  placeholder={"Employee Name"}
+                  value={inputName}
+                  onChangeText={text => setInputName(text)}
+                  textAlign={"left"}
+                  editable={true}
+                />
+                <View style={{width:'20%'}}>
+                  <TouchableOpacity 
+                    style={styles.dateAndTimeBtu}
+                    onPress={addName}
+                  >
+                    <Octicons name="person-add" size={24} color="black" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+            {datePicker && (
+              <DateTimePicker
+                value={date}
+                mode={'date'}
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                is24Hour={true}
+                onChange={onDateSelected}
+                style={styles.datePicker}
               />
-              <Text style={styles.labelTextUser}>Date</Text>
-              <TextInput
-                style={styles.inputUser}
-                placeholder={"Date"}
-                value={visit}
-                onChangeText={(text) => setVisit(text)}
-                textAlign={"right"}
-                editable={true}
+            )}
+            {timePicker && (
+              <DateTimePicker
+                value={time}
+                mode={'time'}
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                is24Hour={false}
+                onChange={onTimeSelected}
+                style={styles.datePicker}
               />
-            </View>
-            <View style={{ flex: 1, marginLeft: 20, marginRight: 20 }}>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  width: "100%",
-                  marginBottom: 10,
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    width: "25%",
-                  }}
-                >
-                  <Text style={styles.labelTextUser}>no</Text>
-                  <Text style={styles.labelTextUser}>yes</Text>
-                </View>
-                <Text style={styles.labelTextUser}>Questions</Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  width: "100%",
-                  marginBottom: 10,
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    width: "25%",
-                  }}
-                >
-                  <RadioButton
-                    value="0"
-                    color="white"
-                    uncheckedColor="#FFC947"
-                    status={checked1 === "0" ? "checked" : "unchecked"}
-                    onPress={() => setChecked1("0")}
-                  />
-                  <RadioButton
-                    value="1"
-                    uncheckedColor="#FFC947"
-                    status={checked1 === "1" ? "checked" : "unchecked"}
-                    onPress={() => setChecked1("1")}
-                  />
-                </View>
-                <Text style={{ fontSize: 15, color: "#fff" }}>
-                  هل المحل نظيف
-                </Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  width: "100%",
-                  marginBottom: 10,
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    width: "25%",
-                  }}
-                >
-                  <RadioButton
-                    value="0"
-                    color="white"
-                    uncheckedColor="#FFC947"
-                    status={checked2 === "0" ? "checked" : "unchecked"}
-                    onPress={() => setChecked2("0")}
-                  />
-                  <RadioButton
-                    value="1"
-                    uncheckedColor="#FFC947"
-                    status={checked2 === "1" ? "checked" : "unchecked"}
-                    onPress={() => setChecked2("1")}
-                  />
-                </View>
-                <Text style={{ fontSize: 15, color: "#fff" }}>
-                  هل الخدمه جيده
-                </Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  width: "100%",
-                  marginBottom: 10,
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    width: "25%",
-                  }}
-                >
-                  <RadioButton
-                    value="0"
-                    color="white"
-                    uncheckedColor="#FFC947"
-                    status={checked3 === "0" ? "checked" : "unchecked"}
-                    onPress={() => setChecked3("0")}
-                  />
-                  <RadioButton
-                    value="1"
-                    uncheckedColor="#FFC947"
-                    status={checked3 === "1" ? "checked" : "unchecked"}
-                    onPress={() => setChecked3("1")}
-                  />
-                </View>
-                <Text style={{ fontSize: 15, color: "#fff" }}>
-                  هل الموظفين ملتزمين بتعليمات الاداره
-                </Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  width: "100%",
-                  marginBottom: 10,
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    width: "25%",
-                  }}
-                >
-                  <RadioButton
-                    value="0"
-                    color="white"
-                    uncheckedColor="#FFC947"
-                    status={checked4 === "0" ? "checked" : "unchecked"}
-                    onPress={() => setChecked4("0")}
-                  />
-                  <RadioButton
-                    value="1"
-                    uncheckedColor="#FFC947"
-                    status={checked4 === "1" ? "checked" : "unchecked"}
-                    onPress={() => setChecked4("1")}
-                  />
-                </View>
-                <Text style={{ fontSize: 15, color: "#fff" }}>
-                  هل البضائع متوفره بشكل كامل ومرتبه باماكنها
-                </Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  width: "100%",
-                  marginBottom: 10,
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    width: "25%",
-                  }}
-                >
-                  <RadioButton
-                    value="0"
-                    color="white"
-                    uncheckedColor="#FFC947"
-                    status={checked5 === "0" ? "checked" : "unchecked"}
-                    onPress={() => setChecked5("0")}
-                  />
-                  <RadioButton
-                    value="1"
-                    uncheckedColor="#FFC947"
-                    status={checked5 === "1" ? "checked" : "unchecked"}
-                    onPress={() => setChecked5("1")}
-                  />
-                </View>
-                <Text style={{ fontSize: 15, color: "#fff" }}>
-                  هل الاسعار بارزه للعميل بشكل واضح
-                </Text>
-              </View>
-            </View>
-            <View
-              style={{
-                width: width * 0.95,
-                alignItems: "flex-end",
-                marginRight: 20,
-                marginBottom: 40,
-              }}
-            >
-              <Text style={styles.labelTextUser}>Note</Text>
-              <TextInput
-                style={styles.inputUser}
-                placeholder={"Note"}
-                value={text}
-                onChangeText={(text) => setText(text)}
-                textAlign={"right"}
-                editable={true}
-              />
-            </View>
-            <View
-              style={{
-                width: "100%",
-                flexDirection: "row",
-                justifyContent: "space-around",
-                alignItems: "center",
-              }}
-            >
+            )}
+          </KeyboardAvoidingView>
+          <SwipeableFlatList
+            keyExtractor={extractItemKey}
+            data={names}
+            renderItem={({item}) => (
+              <Item item={item} deleteItem={() => deleteItem} />
+            )}
+            maxSwipeDistance={160}
+            renderQuickActions={({index, item}) => QuickActions(index, item)}
+            shouldBounceOnMount={true}
+            ItemSeparatorComponent={renderItemSeparator}
+          />
+        </View>
+      )
+  }
+
+  const RateInfoScreen = () => {
+    return (
+      <View
+        style={styles.screen}
+      >
+      </View>
+    )
+  }
+
+  return (
+    <SafeAreaView style={{ flex: 1}}>   
+      <Stack.Navigator
+          initialRouteName="VisitInfo"
+          screenOptions={{
+            headerShown: true,
+            gestureEnabled: true,
+            headerTitleAlign: 'center',
+            headerStyle: {
+              backgroundColor: "#082032",
+              borderBottomColor:"#fff",
+              borderBottomWidth:2
+            },
+            headerTitleStyle: {
+              textAlign: 'center',
+            },
+            headerTintColor:'#fff',
+            headerLeftContainerStyle:{
+              marginTop:-30,
+              flex:1,
+              justifyContent: 'center',
+              paddingLeft:10
+            },
+            headerRightContainerStyle:{
+              marginTop:-30,
+              flex:1,
+              justifyContent: 'center',
+              paddingRight:10
+            },
+            headerTitleContainerStyle:{
+              marginTop:-30,
+              flex:1,
+              justifyContent: 'center',
+            }
+          }}
+        >
+        <Stack.Screen 
+          name="VisitInfo" component={VisitInfoScreen}
+          options={{
+            headerTitle: () => (
               <TouchableOpacity
-                style={styles.loginBtu}
-                onPress={() => {
-                  submit();
-                }}
+                onPress={() => clear()}
+                style={{flex:1,flexDirection:'row',justifyContent:"center",alignItems:'center'}}
               >
-                <Text style={{ fontSize: 15, fontWeight: "bold" }}>Submit</Text>
+                <Fontisto name="spinner-refresh" size={30} color="#fff" />
               </TouchableOpacity>
+            ),
+            headerLeft: () => (
               <TouchableOpacity
-                style={styles.loginBtu}
-                onPress={() => {
-                  logOut();
-                }}
+                onPress={() => goToRateInfo()}
+                style={{flex:1,flexDirection:'row',justifyContent:"center",alignItems:'center'}}
               >
-                <Text style={{ fontSize: 15, fontWeight: "bold" }}>Logout</Text>
+                <MaterialIcons name="arrow-back-ios" size={24} color="#fff" />
+                <Text style={{color:'#fff',fontSize:15}}>
+                  {`Next`}
+                </Text>
               </TouchableOpacity>
-            </View>
-          </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </SafeAreaProvider>
+            ),
+            headerRight: () => (
+              <TouchableOpacity
+                onPress={() => logOut()}
+                style={{flex:1,flexDirection:'row',justifyContent:"center",alignItems:'center'}}
+              >
+                <Text style={{color:'#fff',fontSize:15}}>
+                  {`Logout `}
+                </Text>
+                <MaterialIcons name="arrow-forward-ios" size={24} color="#fff" />
+              </TouchableOpacity>
+            ),
+          }}
+        />
+        <Stack.Screen
+          name="RateInfo"
+          options={{
+            title:'Rate',
+            gestureDirection: "horizontal-inverted",
+            cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+            headerLeft: () => (
+              <View></View>
+              // <TouchableOpacity
+              //   onPress={() => {}}
+              //   style={{flex:1,flexDirection:'row',justifyContent:"center",alignItems:'center'}}
+              // >
+              //   {/* <MaterialIcons name="arrow-back-ios" size={24} color="#fff" /> */}
+              //   <Text style={{color:'#fff',fontSize:15}}>
+              //     {`Submit`}
+              //   </Text>
+              // </TouchableOpacity>
+            ),
+            headerRight: () => (
+              <TouchableOpacity
+                onPress={() => navigation.navigate("VisitInfo")}
+                style={{flex:1,flexDirection:'row',justifyContent:"center",alignItems:'center'}}
+              >
+                <Text style={{color:'#fff',fontSize:15}}>
+                  {`Back `}
+                </Text>
+                <MaterialIcons name="arrow-forward-ios" size={24} color="#fff" />
+              </TouchableOpacity>
+            ),
+          }}
+          component={RateInfoScreen}
+        />
+      </Stack.Navigator>
+    </SafeAreaView>
   );
 }
+
+
+const darkColors = {
+  background: '#121212',
+  primary: '#BB86FC',
+  primary2: '#3700b3',
+  secondary: '#03DAC6',
+  onBackground: '#FFFFFF',
+  error: '#CF6679',
+};
+
+const colorEmphasis = {
+  high: 0.87,
+  medium: 0.6,
+  disabled: 0.38,
+};
 
 const styles = StyleSheet.create({
   loadingContainer: {
@@ -401,100 +559,213 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   screen: {
+    flex: 1,
     height: "100%",
     justifyContent: "flex-start",
-    alignItems: "flex-start",
+    alignItems: "center",
     backgroundColor: "#082032",
   },
-  image: {
-    height: 100,
-    width: 100,
-    opacity: 1,
-    marginTop: 70,
+  itemOutterView:{
+    width:0.8*width,
+    maxHeight:70,
+    flex:1,
+    flexDirection:'column',
+    justifyContent:'flex-start',
+    alignItems:'flex-start',
+    marginBottom:40
   },
-  userView: {
-    marginTop: 35,
-    height: dim,
-    width: dim,
-    borderRadius: dim * 0.5,
-    borderColor: "#FFC947",
-    borderWidth: 5,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#fff",
+  itemtextView:{
+    marginBottom:10,
+    fontSize:15,
+    color:'#fff'
   },
-  labelTextUser: {
-    marginTop: 30,
-    fontSize: 15,
-    color: "#fff",
-    marginBottom: 5,
+  itemInputView:{
+    flex:1,
+    flexDirection:'row',
+    minHeight:50,
+    maxHeight:50,
+    width:'100%',
+    backgroundColor:'#fff',
+    borderRadius:10
   },
-  inputUser: {
-    height: 40,
-    padding: 10,
-    borderRadius: 20,
-    fontSize: 15,
-    fontWeight: "bold",
-    backgroundColor: "#FFC947",
-    color: "black",
-    width: "80%",
+  dateAndTime:{
+    height:50,
+    textAlignVertical:'center',
+    paddingLeft:5
   },
-  labelTextPass: {
-    marginTop: 10,
-    fontSize: 15,
-    color: "#fff",
-    marginBottom: 5,
+  dateOutterView:{
+    width:0.8*width,
+    maxHeight:70,
+    flex:1,
+    flexDirection:'row',
+    justifyContent:'space-between',
+    alignItems:'flex-start',
+    marginBottom:40,
   },
-  inputPass: {
-    height: 40,
-    padding: 10,
-    fontSize: 20,
-    fontWeight: "bold",
-    borderRadius: 20,
-    backgroundColor: "#FFC947",
-    color: "black",
-    width: "80%",
+  dateAndTimeBtu:{
+    height:50,
+    width:'100%',
+    flex:1,
+    justifyContent:'center',
+    alignItems:'center',
+  },
+  dataInnerView:{
+    minWidth:0.35*width,
+    maxWidth:0.35*width,
+    maxHeight:70,
+    flex:1,
+    flexDirection:'column',
+    justifyContent:'flex-start',
+    alignItems:'flex-start',
+    marginBottom:40,
+  },
+  text: {
+    fontSize: 25,
+    color: 'red',
+    padding: 3,
     marginBottom: 10,
+    textAlign: 'center'
   },
-  boxView: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 20,
-    marginTop: 15,
+  addAndSubOutterView:{
+    width:0.8*width,
+    maxHeight:50,
+    flex:1,
+    flexDirection:'row',
+    justifyContent:'space-around',
+    alignItems:'center',
   },
-  checkbox: {
-    marginRight: 10,
-    borderColor: "#fff",
+  addAndSubBtu:{
+    height:50,
+    width:50,
+    flex:1,
+    justifyContent:'center',
+    alignItems:'center',
   },
-  boxText: {
-    fontSize: 15,
-    color: "#fff",
-    marginRight: 10,
+  addAndSubView:{
+    minHeight:30,
+    minWidth:30,
+    maxHeight:30,
+    maxWidth:30,
+    borderRadius:15,
+    flex:1,
+    justifyContent:'center',
+    alignItems:'center',
+    backgroundColor:'#fff'
   },
-  loginBtu: {
-    height: 40,
+  noOfemployeeView:{
+    height:50,
+    maxWidth:50,
+    flex:1,
+    justifyContent:'center',
+    alignItems:'center',
+    borderRadius:10,
+    backgroundColor:'#fff'
+  },
+  noOfemployeeText:{
+    textAlign:'center',
+    textAlignVertical:'center',
+    fontSize:25,
+    fontWeight:'bold'
+  },
+  employeeInputView:{
+    width:0.8*width,
+    minHeight:50,
+    borderRadius:10,
+    flex:1,
+    flexDirection:'row',
+    backgroundColor:'#fff'
+  },
+  employeeInput:{
+    width:'80%',
+    height:50,
+    paddingLeft:5,
+  },
+  // Style for iOS ONLY...
+  datePicker: {
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    width: 320,
+    height: 260,
+    display: 'flex',
+  },
+  container: {
+    backgroundColor: '#121212',
+  },
+  headerContainer: {
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 10,
+  },
+  headerText: {
+    fontSize: 30,
+    fontWeight: '800',
+    color: darkColors.onBackground,
+    opacity: colorEmphasis.high,
+  },
+  item: {
+    backgroundColor: '#fff',
+    height: 80,
+    flexDirection: 'row',
     padding: 10,
-    paddingLeft: 30,
-    paddingRight: 30,
-    borderRadius: 20,
-    justifyContent: "center",
-    backgroundColor: "#FFC947",
-    marginBottom: 20,
+    width:width
   },
-  lastView: {
-    flexDirection: "row",
-    width: "90%",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 10,
+  messageContainer: {
+    flex:1,
+    justifyContent:'center',
+    alignItems:'flex-start'
   },
-  btu: {
-    height: 40,
-    padding: 10,
-    width: "45%",
-    borderRadius: 20,
-    justifyContent: "center",
-    backgroundColor: "#FFC947",
+  name: {
+    fontSize: 16,
+    color: 'black',
+    opacity: colorEmphasis.high,
+    fontWeight: '800',
+    paddingLeft:10
+  },
+  text: {
+    fontSize: 10,
+    color: darkColors.onBackground,
+    opacity: colorEmphasis.medium,
+  },
+  avatar: {
+    maxWidth: 50,
+    maxHeight: 50,
+    minWidth: 50,
+    minHeight: 50,
+    backgroundColor: darkColors.onBackground,
+    opacity: colorEmphasis.high,
+    borderColor: 'black',
+    borderWidth: 1,
+    borderRadius: 25,
+    marginRight: 7,
+    alignSelf: 'center',
+    shadowColor: darkColors.secondary,
+    shadowOffset: {width: 1, height: 1},
+    shadowRadius: 2,
+    shadowOpacity: colorEmphasis.high,
+    flex:1,
+    justifyContent:'center',
+    alignItems:'center'
+  },
+  itemSeparator: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: 'black',
+    opacity: colorEmphasis.medium,
+  },
+  qaContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  button: {
+    width: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  button1:{
+    backgroundColor:'lightgray'
+  },
+  button2:{
+    backgroundColor:'red'
   },
 });

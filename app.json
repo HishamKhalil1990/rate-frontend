@@ -21,11 +21,16 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.abuodehbros.alrayhan",
+      "package": "com.abuodehbros.rates",
       "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "40aaeb13-2f42-4646-9cd2-0226d785e1bc"
+      }
     }
   }
 }
