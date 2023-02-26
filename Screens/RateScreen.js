@@ -49,28 +49,36 @@ export default function RateScreen({ navigation, route }) {
   const [names, setNames] = useState([]);
 
   useEffect(() => {
-    branchesList()
+    if(fetcheddata !== undefined){
+      branchesList(fetcheddata)
+    }else{
+      newAtempt()
+    }
   }, []);
 
-  useEffect(() => {
+  const clear = () => {
     setBranchValue(null)
-      setDate(new Date())
-      setDatePicker(false)
-      setTimePicker(new Date(Date.now()))
-      setTimePicker(false)
-      setNoOfemployee(1)
-      setNames([])
-      branchesList()
+    setDate(new Date())
+    setDatePicker(false)
+    setTimePicker(new Date(Date.now()))
+    setTimePicker(false)
+    setNoOfemployee(1)
+    setNames([])
+  }
+
+  useEffect(() => {
+    clear()
   }, [fetcheddata]);
 
-  const branchesList = () => {
-    const branches = fetcheddata.branches.map(branch => {
+  const branchesList = (fetcheddata) => {
+    const branches = fetcheddata.map((branch,index) => {
       return {
-        label: branch[0], 
-        value: branch[0]
+        key:index, 
+        label:branch,
+        value: branch,
       }
     })
-    setBranch(branches)
+    setBranch([...branches])
   }
 
   async function logOut() {
@@ -106,15 +114,22 @@ export default function RateScreen({ navigation, route }) {
     }
   }
 
-  const clear = async () => {
+  const newAtempt = async () => {
     setLoading(true)
-    apis.getBranches(username)
-    .then((data) => {
+    const data = await apis.getBranches(username)
+    if(data){
       setLoading(false)
       if (data.status == "success") {
-        setFetchedData(data.data)
+        branchesList(data.data.branches)
+        setFetchedData([...data.data.branches])
+      }else{
+        alert('لم يتم تحديث قائمة الفروع')
+        setFetchedData(fetcheddata)
       }
-    });
+    }else{
+      alert('لم يتم تحديث قائمة الفروع')
+      setFetchedData(fetcheddata)
+    }
   }
 
   const showDatePicker = () => {
@@ -140,7 +155,7 @@ export default function RateScreen({ navigation, route }) {
     let minutes = time.getMinutes();
     let ampm = hours >= 12 ? 'pm' : 'am';
     hours = hours % 12;
-    hours = hours ? hours : 12; // the hour '0' should be '12'
+    hours = hours ? hours : 12;
     minutes = minutes < 10 ? '0'+minutes : minutes;
     let strTime = hours + ':' + minutes + ' ' + ampm;
     return strTime;
@@ -194,7 +209,7 @@ export default function RateScreen({ navigation, route }) {
   };
 
   const editItem = () => {
-
+    
   }
 
   const QuickActions = (index, item) => {
@@ -246,13 +261,15 @@ export default function RateScreen({ navigation, route }) {
         >
           <Loader loading={loading} />
           <KeyboardAvoidingView enabled>
-            <View style={[styles.itemOutterView,{marginTop:10}]}>
+            <View style={[styles.itemOutterView,{marginTop:10,zIndex:50}]}>
               <View>
                 <Text style={styles.itemtextView}>
                   Branch
                 </Text>
               </View>
                 <DropDownPicker
+                  itemKey="key"
+                  searchable={true}
                   open={branchOpen}
                   value={branchValue}
                   items={branch}
@@ -262,8 +279,9 @@ export default function RateScreen({ navigation, route }) {
                   placeholder="Select Branch"
                   // onSelectItem={(item) => alert(branchValue)}
                   containerStyle={{height: 50}}
+                  autoScroll={true}
+                  listMode="FLATLIST"
                   zIndex={3000}
-                  zIndexInverse={1000}
                 />
             </View>
             <View style={styles.dateOutterView}>
@@ -453,7 +471,7 @@ export default function RateScreen({ navigation, route }) {
           options={{
             headerTitle: () => (
               <TouchableOpacity
-                onPress={() => clear()}
+                onPress={() => newAtempt()}
                 style={{flex:1,flexDirection:'row',justifyContent:"center",alignItems:'center'}}
               >
                 <Fontisto name="spinner-refresh" size={30} color="#fff" />
@@ -566,7 +584,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#082032",
   },
   itemOutterView:{
-    width:0.8*width,
+    width:0.85*width,
     maxHeight:70,
     flex:1,
     flexDirection:'column',
@@ -594,7 +612,7 @@ const styles = StyleSheet.create({
     paddingLeft:5
   },
   dateOutterView:{
-    width:0.8*width,
+    width:0.85*width,
     maxHeight:70,
     flex:1,
     flexDirection:'row',
@@ -610,8 +628,8 @@ const styles = StyleSheet.create({
     alignItems:'center',
   },
   dataInnerView:{
-    minWidth:0.35*width,
-    maxWidth:0.35*width,
+    minWidth:0.4*width,
+    maxWidth:0.4*width,
     maxHeight:70,
     flex:1,
     flexDirection:'column',
@@ -627,7 +645,7 @@ const styles = StyleSheet.create({
     textAlign: 'center'
   },
   addAndSubOutterView:{
-    width:0.8*width,
+    width:0.85*width,
     maxHeight:50,
     flex:1,
     flexDirection:'row',
@@ -668,7 +686,7 @@ const styles = StyleSheet.create({
     fontWeight:'bold'
   },
   employeeInputView:{
-    width:0.8*width,
+    width:0.85*width,
     minHeight:50,
     borderRadius:10,
     flex:1,

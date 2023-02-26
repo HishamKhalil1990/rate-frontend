@@ -33,13 +33,10 @@ export default function LoginScreen({ navigation }) {
       try {
         const username = await AsyncStorage.getItem("username");
         if (username !== null) {
-          const data = await apis.getUser(user,pass);
-          if (data.status == "success") {
-            navigation.navigate("Rate",{
-              username:username,
-              data:data.data
-            });
-          }
+          navigation.navigate("Rate",{
+            username:username,
+            data:undefined
+          });
         }
       } catch (e) {
         console.log(e);
@@ -61,7 +58,7 @@ export default function LoginScreen({ navigation }) {
             setPass("");
             navigation.navigate("Rate",{
               username:user,
-              data:data.data
+              data:data.data.branches
             });
           } catch (e) {
             alert("Internal error! please try again");
