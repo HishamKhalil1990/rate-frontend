@@ -20,6 +20,7 @@ import { createStackNavigator,CardStyleInterpolators, } from "@react-navigation/
 import DateTimePicker from '@react-native-community/datetimepicker';
 import DropDownPicker from 'react-native-dropdown-picker'
 import SwipeableFlatList from 'react-native-swipeable-list'
+import DialogInput from 'react-native-dialog-input';
 import { Entypo } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons'; 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -47,6 +48,8 @@ export default function RateScreen({ navigation, route }) {
   const [branch, setBranch] = useState([]);
   const [noOfemployee, setNoOfemployee] = useState(1);
   const [names, setNames] = useState([]);
+  const [visible, setVisible] = useState(false);
+  const [updateEmployee, setUpdateEmployee] = useState({})
 
   useEffect(() => {
     if(fetcheddata !== undefined){
@@ -123,11 +126,11 @@ export default function RateScreen({ navigation, route }) {
         branchesList(data.data.branches)
         setFetchedData([...data.data.branches])
       }else{
-        alert('لم يتم تحديث قائمة الفروع')
+        // alert('لم يتم تحديث قائمة الفروع')
         setFetchedData(fetcheddata)
       }
     }else{
-      alert('لم يتم تحديث قائمة الفروع')
+      // alert('لم يتم تحديث قائمة الفروع')
       setFetchedData(fetcheddata)
     }
   }
@@ -205,18 +208,32 @@ export default function RateScreen({ navigation, route }) {
   const deleteItem = (itemId) => {
     let allNames = [...names];
     allNames = allNames.filter(item => item.id !== itemId);
-    return setNames(allNames);
+    setNames(allNames);
   };
 
-  const editItem = () => {
-    
+  const editItem = (item) => {
+    setUpdateEmployee(item)
+    setVisible(true);
+  }
+
+  const saveUpdatedName = (newName) => {
+    let allNames = [...names];
+    allNames = allNames.map(item => {
+      if(item.id == updateEmployee.id){
+        item.name = newName
+        setUpdateEmployee({})
+      }
+      return item
+    });
+    setVisible(false);
+    setNames(allNames);
   }
 
   const QuickActions = (index, item) => {
     return (
       <View style={styles.qaContainer}>
         <View style={[styles.button, styles.button1]}>
-          <TouchableOpacity onPress={() => editItem(item.id)}>
+          <TouchableOpacity onPress={() => editItem(item)}>
             <Feather name="edit" size={30} color="#fff" />
           </TouchableOpacity>
         </View>
@@ -406,6 +423,16 @@ export default function RateScreen({ navigation, route }) {
               />
             )}
           </KeyboardAvoidingView>
+          <View>
+            <DialogInput isDialogVisible={visible}
+                title={"تعديل الاسماء"}
+                message={"الرجاء تعديل اسم الموظف"}
+                initValueTextInput ={updateEmployee.name}
+                submitText={"UPDATE"}
+                submitInput={ (inputText) => {saveUpdatedName(inputText)} }
+                closeDialog={ () => {setVisible(false)}}>
+            </DialogInput>
+          </View>
           <SwipeableFlatList
             keyExtractor={extractItemKey}
             data={names}
