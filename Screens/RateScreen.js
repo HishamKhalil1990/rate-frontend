@@ -50,6 +50,7 @@ export default function RateScreen({ navigation, route }) {
   const [names, setNames] = useState([]);
   const [visible, setVisible] = useState(false);
   const [updateEmployee, setUpdateEmployee] = useState({})
+  const [errMsg, setErrMsg] = useState('')
 
   useEffect(() => {
     if(fetcheddata !== undefined){
@@ -118,6 +119,9 @@ export default function RateScreen({ navigation, route }) {
   }
 
   const newAtempt = async () => {
+    if(errMsg != ''){
+      setErrMsg('')
+    }
     setLoading(true)
     const data = await apis.getBranches(username)
     if(data){
@@ -126,11 +130,11 @@ export default function RateScreen({ navigation, route }) {
         branchesList(data.data.branches)
         setFetchedData([...data.data.branches])
       }else{
-        // alert('لم يتم تحديث قائمة الفروع')
+        setErrMsg('لم يتم تحديث قائمة الفروع')
         setFetchedData(fetcheddata)
       }
     }else{
-      // alert('لم يتم تحديث قائمة الفروع')
+      setErrMsg('لم يتم تحديث قائمة الفروع')
       setFetchedData(fetcheddata)
     }
   }
@@ -284,22 +288,27 @@ export default function RateScreen({ navigation, route }) {
                   Branch
                 </Text>
               </View>
-                <DropDownPicker
-                  itemKey="key"
-                  searchable={true}
-                  open={branchOpen}
-                  value={branchValue}
-                  items={branch}
-                  setOpen={setBranchOpen}
-                  setValue={setBranchValue}
-                  setItems={setBranch}
-                  placeholder="Select Branch"
-                  // onSelectItem={(item) => alert(branchValue)}
-                  containerStyle={{height: 50}}
-                  autoScroll={true}
-                  listMode="FLATLIST"
-                  zIndex={3000}
-                />
+              <DropDownPicker
+                itemKey="key"
+                searchable={true}
+                open={branchOpen}
+                value={branchValue}
+                items={branch}
+                setOpen={setBranchOpen}
+                setValue={setBranchValue}
+                setItems={setBranch}
+                placeholder="Select Branch"
+                // onSelectItem={(item) => alert(branchValue)}
+                containerStyle={{height: 50}}
+                autoScroll={true}
+                listMode="FLATLIST"
+                zIndex={3000}
+              />
+              {errMsg != ''?
+                <Text style={{color:'red',textAlign:'center',width:0.8*width,fontWeight:'bold',padding:5}}>{errMsg}</Text>
+              :
+                <></>
+              }
             </View>
             <View style={styles.dateOutterView}>
               <View style={styles.dataInnerView}>
