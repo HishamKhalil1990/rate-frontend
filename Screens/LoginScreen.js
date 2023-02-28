@@ -58,7 +58,7 @@ export default function LoginScreen({ navigation }) {
             setPass("");
             navigation.navigate("Rate",{
               username:user,
-              data:data.data.branches
+              data:data.data
             });
           } catch (e) {
             alert("Internal error! please try again");

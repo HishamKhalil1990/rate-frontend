@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Text,
   StyleSheet,
@@ -29,6 +29,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import { Fontisto } from '@expo/vector-icons';
 import Loader from '../Component/Loader'
+import Slider from "../Component/Slider";
 
 const width = Dimensions.get("window").width;
 const height = Dimensions.get("window").height;
@@ -38,7 +39,8 @@ export default function RateScreen({ navigation, route }) {
   const [username, setUsername] = useState(route.params.username);
   const [loading, setLoading] = useState(false);
   const [fetcheddata, setFetchedData] = useState(route.params.data)
-  const [data, setData] = useState({data : []})
+  const [ratedata, setRateData] = useState()
+  const [editData, setEditData] = useState()
   const [datePicker, setDatePicker] = useState(false);
   const [date, setDate] = useState(new Date());
   const [timePicker, setTimePicker] = useState(false);
@@ -54,7 +56,8 @@ export default function RateScreen({ navigation, route }) {
 
   useEffect(() => {
     if(fetcheddata !== undefined){
-      branchesList(fetcheddata)
+      branchesList(fetcheddata.branches)
+      setRateData(fetcheddata.categories)
     }else{
       newAtempt()
     }
@@ -74,8 +77,8 @@ export default function RateScreen({ navigation, route }) {
     clear()
   }, [fetcheddata]);
 
-  const branchesList = (fetcheddata) => {
-    const branches = fetcheddata.map((branch,index) => {
+  const branchesList = (fetchedBranches) => {
+    const branches = fetchedBranches.map((branch,index) => {
       return {
         key:index, 
         label:branch,
@@ -123,19 +126,22 @@ export default function RateScreen({ navigation, route }) {
       setErrMsg('')
     }
     setLoading(true)
-    const data = await apis.getBranches(username)
+    const data = await apis.getRateTemplatesData(username)
     if(data){
       setLoading(false)
       if (data.status == "success") {
         branchesList(data.data.branches)
-        setFetchedData([...data.data.branches])
+        setRateData([...data.data.categories])
+        setFetchedData({...data.data})
       }else{
         setErrMsg('لم يتم تحديث قائمة الفروع')
-        setFetchedData(fetcheddata)
+        setRateData([...fetcheddata.categories])
+        setFetchedData({...fetcheddata})
       }
     }else{
       setErrMsg('لم يتم تحديث قائمة الفروع')
-      setFetchedData(fetcheddata)
+      setRateData([...fetcheddata.categories])
+      setFetchedData({...fetcheddata})
     }
   }
 
@@ -298,7 +304,6 @@ export default function RateScreen({ navigation, route }) {
                 setValue={setBranchValue}
                 setItems={setBranch}
                 placeholder="Select Branch"
-                // onSelectItem={(item) => alert(branchValue)}
                 containerStyle={{height: 50}}
                 autoScroll={true}
                 listMode="FLATLIST"
@@ -457,11 +462,16 @@ export default function RateScreen({ navigation, route }) {
       )
   }
 
+  const changeData = (catData) => {
+    setEditData(catData)
+  }
+
   const RateInfoScreen = () => {
     return (
       <View
         style={styles.screen}
       >
+        <Slider data={ratedata} changeData={changeData}/>
       </View>
     )
   }
@@ -520,7 +530,7 @@ export default function RateScreen({ navigation, route }) {
               >
                 <MaterialIcons name="arrow-back-ios" size={24} color="#fff" />
                 <Text style={{color:'#fff',fontSize:15}}>
-                  {`Next`}
+                  {`Next `}
                 </Text>
               </TouchableOpacity>
             ),
@@ -557,7 +567,10 @@ export default function RateScreen({ navigation, route }) {
             ),
             headerRight: () => (
               <TouchableOpacity
-                onPress={() => navigation.navigate("VisitInfo")}
+                onPress={() => {
+                  setRateData({...editData})
+                  navigation.navigate("VisitInfo")
+                }}
                 style={{flex:1,flexDirection:'row',justifyContent:"center",alignItems:'center'}}
               >
                 <Text style={{color:'#fff',fontSize:15}}>

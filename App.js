@@ -21,8 +21,15 @@ export default function App() {
           gestureEnabled: true,
         }}
       >
-        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen 
+          name="Login" 
+          component={LoginScreen} 
+        />
         <Stack.Screen
+          options={{
+            gestureDirection: "horizontal-inverted",
+            cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+          }}
           name="Rate"
           component={RateScreen}
         />
