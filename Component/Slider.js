@@ -4,34 +4,34 @@ import {
     StyleSheet,
     View,
     Alert,
-    Image,
-    Button,
     Dimensions,
     TextInput,
     TouchableOpacity,
     FlatList,
-    KeyboardAvoidingView,
     Modal
 } from "react-native";
 import { MaterialIcons } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons';
 import Item from "./Item";
 
 const width = Dimensions.get("window").width;
 
 let allCatData = []
+let sendAction = false
 
-export default Slider = ({data,changeData}) => {
+export default Slider = ({data,changeData,username,branchValue,time,date,names}) => {
     const [catData,setCatData] = useState(data)
     const [cat,setCat] = useState(data[0])
     const [maxSlidesNo,setMaxSlidesNo] = useState(data[0].max)
     const [currIndex,setCurrIndex] = useState(0)
+    const [sent,setSent] = useState(false)
 
     useEffect(() => {
         data.forEach(cat => {
             allCatData.push(cat)
         })
         return () => {
-            changeData(allCatData)
+            changeData(allCatData,sendAction)
         }
     },[])
     
@@ -49,6 +49,37 @@ export default Slider = ({data,changeData}) => {
         setCurrIndex(newIndex)
         setCat(catData[newIndex])
     }
+
+    const sendData = async () => {
+        setSent(true)
+        sendAction = true
+    }
+
+    const makePDF = async() => {
+
+    }
+
+    const submit = async() => {
+        Alert.alert(
+          'ارسال',
+          'هل تريد الارسال ؟',
+          [
+            {
+              text: 'Cancel',
+              onPress: () => {
+                return null;
+              },
+            },
+            {
+              text: 'Confirm',
+              onPress: () => {
+                return sendData()
+              },
+            },
+          ],
+          {cancelable: false},
+        );
+      }
     
     const Category = () => {
         const [modalVisible, setModalVisible] = useState(false);
@@ -58,21 +89,25 @@ export default Slider = ({data,changeData}) => {
         const [total,setTotal] = useState(cat.total)
 
         useEffect(() => {
-            return () =>setCatData(allCatData)
+            return () => setCatData(allCatData)
         },[])
 
-        const saveNote = () => {
-            const newCat = cat
-            newCat.note = editNote
-            setNote(editNote)
-            setEditCat({...newCat})
-            allCatData[editCat.id] = newCat
+        const saveNote = (action) => {
+            if(action == 'yes'){
+                const newCat = cat
+                newCat.note = editNote
+                setNote(editNote)
+                setEditCat({...newCat})
+                allCatData[editCat.id] = newCat
+            }else{
+                setEditNote(note)
+            }
         }
 
         const changeCatData = (newCat) => {
             setTotal(newCat.total)
             setEditCat({...newCat})
-            allCatData[editCat.id] = editCat
+            allCatData[editCat.id] = newCat
         }
 
         const clearNote = () => {
@@ -89,8 +124,8 @@ export default Slider = ({data,changeData}) => {
                 </View>
                 <View style={styles.header}>
                     <Text style={{height:'100%',width:'60%',textAlign:'center',textAlignVertical:'center',color:'#fff'}}>السؤال</Text>
-                    <Text style={{height:'100%',width:'20%',textAlign:'center',textAlignVertical:'center',color:'#fff'}}>العلامة</Text>
-                    <Text style={{height:'100%',width:'20%',textAlign:'center',textAlignVertical:'center',color:'#fff'}}>الحد الاعلى</Text>
+                    <Text style={{height:'100%',width:'25%',textAlign:'center',textAlignVertical:'center',color:'#fff'}}>العلامة</Text>
+                    <Text style={{height:'100%',width:'15%',textAlign:'center',textAlignVertical:'center',color:'#fff'}}>الحد الاعلى</Text>
                 </View>
                 <View style={styles.sliderCatContainer}>
                     <FlatList
@@ -123,10 +158,17 @@ export default Slider = ({data,changeData}) => {
                                 scrollEnabled={true}
                                 editable={true}
                             />
-                            <TouchableOpacity
-                                onPress={() => {setModalVisible(!modalVisible),saveNote()}}>
-                                <Text style={styles.textStyle}>Hide Modal</Text>
-                            </TouchableOpacity>
+                            <View style={styles.noteBtuView}>
+                                <TouchableOpacity
+                                    style={{marginLeft:50}}
+                                    onPress={() => {setModalVisible(!modalVisible),saveNote('yes')}}>
+                                    <Text style={styles.textStyle}>SAVE</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={() => {setModalVisible(!modalVisible),saveNote('no')}}>
+                                    <Text style={styles.textStyle}>CANCEL</Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
                     </View>   
                 </Modal>
@@ -153,23 +195,34 @@ export default Slider = ({data,changeData}) => {
                             </Text>
                         </TouchableOpacity>
                     :
-                        <TouchableOpacity
-                            onPress={() => scrollSlider('next')}
-                            style={{flex:1,flexDirection:'row',justifyContent:"center",alignItems:'center'}}
-                        >
-                            <Text style={{
-                                color:"#082032",
-                                fontSize:15,
-                                paddingTop:2,
-                                paddingBottom:2,
-                                paddingLeft:15,
-                                paddingRight:15,
-                                backgroundColor:'#fff',
-                                borderRadius:15
-                            }}>
-                            {`Done`}
-                            </Text>
-                        </TouchableOpacity>
+                        <>
+                            {!sent?
+                                <TouchableOpacity
+                                    onPress={() => submit()}
+                                    style={{flex:1,flexDirection:'row',justifyContent:"center",alignItems:'center'}}
+                                >
+                                    <Text style={{
+                                        color:"#082032",
+                                        fontSize:15,
+                                        paddingTop:2,
+                                        paddingBottom:2,
+                                        paddingLeft:15,
+                                        paddingRight:15,
+                                        backgroundColor:'#fff',
+                                        borderRadius:15
+                                    }}>
+                                    {`Done`}
+                                    </Text>
+                                </TouchableOpacity>
+                            :
+                                <TouchableOpacity
+                                    onPress={() => makePDF()}
+                                    style={{flex:1,flexDirection:'row',justifyContent:"center",alignItems:'center'}}
+                                >
+                                    <AntDesign name="pdffile1" size={30} color="#fff" />
+                                </TouchableOpacity>
+                            }
+                        </>
                     }
                 </View>
                 <View>
@@ -293,4 +346,11 @@ const styles = StyleSheet.create({
         borderWidth:3,
         borderRadius:10
     },
+    noteBtuView:{
+        flex:1,
+        width:'100%',
+        flexDirection:'row-reverse',
+        marginTop:10,
+        justifyContent:'flex-start',
+    }
 })

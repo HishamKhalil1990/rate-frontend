@@ -4,16 +4,12 @@ import {
   StyleSheet,
   View,
   Alert,
-  Image,
-  Button,
   Dimensions,
   TextInput,
   TouchableOpacity,
-  RefreshControl,
   KeyboardAvoidingView,
 } from "react-native";
-import { RadioButton } from "react-native-paper";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import * as apis from "../apis/apis";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createStackNavigator,CardStyleInterpolators, } from "@react-navigation/stack";
@@ -87,7 +83,7 @@ export default function RateScreen({ navigation, route }) {
     setBranch([...branches])
   }
 
-  async function logOut() {
+  const logOut = async() => {
     Alert.alert(
       'Logout',
       'هل انت متأكد من الخروج ؟',
@@ -461,8 +457,12 @@ export default function RateScreen({ navigation, route }) {
       )
   }
 
-  const changeData = (catData) => {
-    setRateData([...catData])
+  const changeData = (catData,sent) => {
+    if(!sent){
+      setRateData([...catData])
+    }else{
+      newAtempt()
+    }
   }
 
   const RateInfoScreen = () => {
@@ -470,7 +470,7 @@ export default function RateScreen({ navigation, route }) {
       <View
         style={styles.screen}
       >
-        <Slider data={ratedata} changeData={changeData}/>
+        <Slider data={ratedata} changeData={changeData} username={username} branchValue={branchValue} time={time} date={date} names={names}/>
       </View>
     )
   }

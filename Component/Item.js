@@ -35,6 +35,9 @@ export default Item = ({item,cat,changeCatData,setModalVisible,catTotal,catNote,
         if(score < item.maxGrade){
             score += 1
             total += 1
+            if(total > cat.maxTotal){
+                total = cat.maxTotal
+            }
             const newData = {
                 score,
                 total
@@ -52,6 +55,9 @@ export default Item = ({item,cat,changeCatData,setModalVisible,catTotal,catNote,
         if(score > 0){
             score -= 1
             total -= 1
+            if(total < 0){
+                total = 0
+            }
             const newData = {
                 score,
                 total
@@ -85,9 +91,9 @@ export default Item = ({item,cat,changeCatData,setModalVisible,catTotal,catNote,
                                 multiline
                                 numberOfLines={3}
                                 style={[styles.textStyle,{width:'60%',height:'100%',textAlignVertical:'top',padding:10}]}
-                                scrollEnabled={true}
+                                scrollEnabled={false}
                         />
-                        <View style={styles.addAndSubOutterView}>
+                        <View style={[styles.addAndSubOutterView,{minWidth:'25%',maxWidth:'25%'}]}>
                             <TouchableOpacity 
                                 style={styles.addAndSubBtu}
                                 onPress={add}
@@ -110,8 +116,8 @@ export default Item = ({item,cat,changeCatData,setModalVisible,catTotal,catNote,
                                 </View>
                             </TouchableOpacity>
                         </View>
-                        <View style={styles.addAndSubOutterView}>
-                            <View style={[styles.maxGradeView,{marginRight:20,marginLeft:20}]}>
+                        <View style={[styles.addAndSubOutterView,{minWidth:'15%',maxWidth:'15%'}]}>
+                            <View style={[styles.maxGradeView,{marginRight:10,marginLeft:10}]}>
                                 <Text style={styles.maxGradeText}>
                                     {item.maxGrade}
                                 </Text>
@@ -207,8 +213,6 @@ const styles = StyleSheet.create({
         borderRadius:10
     },
     addAndSubOutterView:{
-        minWidth:'20%',
-        maxWidth:'20%',
         inHeight:'100%',
         maxHeight:'100%',
         flex:1,
@@ -217,18 +221,18 @@ const styles = StyleSheet.create({
         alignItems:'center',
       },
       addAndSubBtu:{
-        height:20,
-        width:20,
+        height:25,
+        width:25,
         flex:1,
         justifyContent:'center',
         alignItems:'center',
       },
       addAndSubView:{
-        minHeight:20,
-        minWidth:20,
-        maxHeight:20,
-        maxWidth:20,
-        borderRadius:10,
+        minHeight:25,
+        minWidth:25,
+        maxHeight:25,
+        maxWidth:25,
+        borderRadius:15,
         flex:1,
         justifyContent:'center',
         alignItems:'center',
@@ -236,6 +240,8 @@ const styles = StyleSheet.create({
       },
       scoreView:{
         height:40,
+        minWidth:30,
+        maxWidth:30,
         flex:1,
         justifyContent:'center',
         alignItems:'center',
