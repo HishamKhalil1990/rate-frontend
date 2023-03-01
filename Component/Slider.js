@@ -35,6 +35,8 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
         })
         return () => {
             changeData(allCatData,sendAction)
+            allCatData = []
+            sendAction = false
         }
     },[])
     

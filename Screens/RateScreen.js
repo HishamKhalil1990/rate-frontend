@@ -462,6 +462,7 @@ export default function RateScreen({ navigation, route }) {
     if(!sent){
       setRateData([...catData])
     }else{
+      setRateData([])
       newAtempt()
     }
   }
