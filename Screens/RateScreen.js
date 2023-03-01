@@ -83,7 +83,7 @@ export default function RateScreen({ navigation, route }) {
     setBranch([...branches])
   }
 
-  const logOut = async() => {
+  async function logOut(){
     Alert.alert(
       'Logout',
       'هل انت متأكد من الخروج ؟',
@@ -129,11 +129,12 @@ export default function RateScreen({ navigation, route }) {
         setRateData([...data.data.categories])
         setFetchedData({...data.data})
       }else{
-        setErrMsg('لم يتم تحديث قائمة الفروع')
+        setErrMsg(data.msg)
         setRateData([...fetcheddata.categories])
         setFetchedData({...fetcheddata})
       }
     }else{
+      setLoading(false)
       setErrMsg('لم يتم تحديث قائمة الفروع')
       setRateData([...fetcheddata.categories])
       setFetchedData({...fetcheddata})

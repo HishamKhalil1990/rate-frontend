@@ -3,11 +3,9 @@ import {
   Text,
   StyleSheet,
   View,
-  Image,
   Dimensions,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator,
 } from "react-native";
 import Checkbox from "expo-checkbox";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
@@ -38,9 +36,7 @@ export default function LoginScreen({ navigation }) {
             data:undefined
           });
         }
-      } catch (e) {
-        console.log(e);
-      }
+      } catch (e) {}
     };
     getData();
   }, []);
@@ -61,16 +57,16 @@ export default function LoginScreen({ navigation }) {
               data:data.data
             });
           } catch (e) {
-            alert("Internal error! please try again");
+            alert("خطا داخلي الرجاء اعادة المحاولة");
           }
         };
         storeData(); 
       }else {
         setLoading(false);
-        alert("Invalid Username or Password");
+        alert(data.msg);
       }
     } else {  
-      alert("fill all fields");
+      alert("الرجاء تعبئة جميع البيانات");
     }
   }
 

@@ -13,6 +13,8 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 import Item from "./Item";
+import * as apis from '../apis/apis'
+import Loader from "./Loader";
 
 const width = Dimensions.get("window").width;
 
@@ -25,6 +27,7 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
     const [maxSlidesNo,setMaxSlidesNo] = useState(data[0].max)
     const [currIndex,setCurrIndex] = useState(0)
     const [sent,setSent] = useState(false)
+    const [loading,setLoading] = useState(false)
 
     useEffect(() => {
         data.forEach(cat => {
@@ -50,9 +53,48 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
         setCat(catData[newIndex])
     }
 
-    const sendData = async () => {
-        setSent(true)
-        sendAction = true
+    const reSubmit = async(msg) => {
+        Alert.alert(
+          'اعادة ارسال',
+          `${msg} هل تريد اعادة الارسال ؟`,
+          [
+            {
+              text: 'Cancel',
+              onPress: () => {
+                return null;
+              },
+            },
+            {
+              text: 'Confirm',
+              onPress: () => {
+                return sendData()
+              },
+            },
+          ],
+          {cancelable: false},
+        );
+    }
+
+    async function sendData(){
+        const data = {
+            username,
+            branchValue,
+            names,
+            time,
+            date,
+            allCatData
+        }
+        setLoading(true)
+        const response = await apis.saveRate(data)
+        if(response.status == "success"){
+            setLoading(false)
+            setSent(true)
+            sendAction = true
+            alert('تم الارسال')
+        }else{
+            setLoading(false)
+            reSubmit()
+        }
     }
 
     const makePDF = async() => {
@@ -79,7 +121,7 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
           ],
           {cancelable: false},
         );
-      }
+    }
     
     const Category = () => {
         const [modalVisible, setModalVisible] = useState(false);
@@ -179,6 +221,7 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
 
     return(
         <View style={styles.container}>
+            <Loader loading={loading} />
             <View style={styles.sliderContainer}>
                 <Category/>
             </View>
