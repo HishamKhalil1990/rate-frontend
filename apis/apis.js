@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseURL = "http://maltrans.abuodehbros.com:3030/rate";
+const baseURL = "http://localhost:3030/rate";
 
 const getUser = async (username, password) => {
   // let data = { username, password };
@@ -30,6 +30,7 @@ const getUser = async (username, password) => {
   .then((response) => {
     return {
       status: "success",
+      username:'هشام',
       data:{
         branches:[
           "مستودع كارفور - البيادر",
