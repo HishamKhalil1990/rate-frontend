@@ -40,7 +40,6 @@ export default function RateScreen({ navigation, route }) {
   const [loading, setLoading] = useState(false);
   const [fetcheddata, setFetchedData] = useState(route.params.data)
   const [ratedata, setRateData] = useState()
-  const [editData, setEditData] = useState()
   const [datePicker, setDatePicker] = useState(false);
   const [date, setDate] = useState(new Date());
   const [timePicker, setTimePicker] = useState(false);
@@ -463,7 +462,7 @@ export default function RateScreen({ navigation, route }) {
   }
 
   const changeData = (catData) => {
-    setEditData(catData)
+    setRateData([...catData])
   }
 
   const RateInfoScreen = () => {
@@ -568,7 +567,6 @@ export default function RateScreen({ navigation, route }) {
             headerRight: () => (
               <TouchableOpacity
                 onPress={() => {
-                  setRateData({...editData})
                   navigation.navigate("VisitInfo")
                 }}
                 style={{flex:1,flexDirection:'row',justifyContent:"center",alignItems:'center'}}

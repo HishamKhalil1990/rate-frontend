@@ -168,7 +168,7 @@ const getUser = async (username, password) => {
           id:2,
           max:3,
           total:0,
-          maxTotal:15,
+          maxTotal:13,
           name:'الجودة',
           questions:[
             {
@@ -445,7 +445,7 @@ const getRateTemplatesData = async (username) => {
               id:2,
               max:3,
               total:0,
-              maxTotal:15,
+              maxTotal:13,
               name:'الجودة',
               questions:[
                 {

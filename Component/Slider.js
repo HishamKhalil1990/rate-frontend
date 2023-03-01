@@ -18,6 +18,8 @@ import Item from "./Item";
 
 const width = Dimensions.get("window").width;
 
+let allCatData = []
+
 export default Slider = ({data,changeData}) => {
     const [catData,setCatData] = useState(data)
     const [cat,setCat] = useState(data[0])
@@ -25,8 +27,13 @@ export default Slider = ({data,changeData}) => {
     const [currIndex,setCurrIndex] = useState(0)
 
     useEffect(() => {
-        changeData(catData)
-    },[catData])
+        data.forEach(cat => {
+            allCatData.push(cat)
+        })
+        return () => {
+            changeData(allCatData)
+        }
+    },[])
     
     const scrollSlider = (type) => {
         let newIndex = currIndex
@@ -46,21 +53,31 @@ export default Slider = ({data,changeData}) => {
     const Category = () => {
         const [modalVisible, setModalVisible] = useState(false);
         const [note,setNote] = useState(cat.note)
+        const [editNote,setEditNote] = useState(cat.note)
+        const [editCat,setEditCat] = useState(cat)
+        const [total,setTotal] = useState(cat.total)
+
+        useEffect(() => {
+            return () =>setCatData(allCatData)
+        },[])
 
         const saveNote = () => {
             const newCat = cat
-            newCat.note = note
-            setCat({...newCat})
-            let newcatData = catData
-            newcatData[currIndex] = newCat
-            setCatData({...newcatData})
+            newCat.note = editNote
+            setNote(editNote)
+            setEditCat({...newCat})
+            allCatData[editCat.id] = newCat
         }
 
         const changeCatData = (newCat) => {
-            setCat({...newCat})
-            let newcatData = catData
-            newcatData[currIndex] = newCat
-            setCatData({...newcatData})
+            setTotal(newCat.total)
+            setEditCat({...newCat})
+            allCatData[editCat.id] = editCat
+        }
+
+        const clearNote = () => {
+            setEditNote('')
+            setNote('')
         }
         
         return(
@@ -78,14 +95,14 @@ export default Slider = ({data,changeData}) => {
                 <View style={styles.sliderCatContainer}>
                     <FlatList
                         data={cat.questions}
-                        renderItem={({item}) => <Item item={item} cat={cat} changeCatData={changeCatData} setModalVisible={setModalVisible}/>}
+                        renderItem={({item}) => <Item item={item} cat={cat} changeCatData={changeCatData} setModalVisible={setModalVisible} catTotal={total} catNote={note} clearNote={clearNote}/>}
                         keyExtractor={item => item.id}
                         scrollEnabled={true}
                     />
                 </View>
                 <View style={styles.footer}>
                     <Text style={{textAlign:'center',textAlignVertical:'center'}}>
-                        {`المجموع ${cat.total} / ${cat.maxTotal}`}
+                        {`المجموع ${total} / ${cat.maxTotal}`}
                     </Text>
                 </View>
                 <Modal
@@ -96,8 +113,8 @@ export default Slider = ({data,changeData}) => {
                     <View style={styles.centeredView}>
                         <View style={styles.modalView}>
                             <TextInput
-                                value={note}
-                                onChangeText={text => setNote(text)}
+                                value={editNote}
+                                onChangeText={text => setEditNote(text)}
                                 multiline
                                 numberOfLines={20}
                                 maxLength={500}

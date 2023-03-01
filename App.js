@@ -26,10 +26,6 @@ export default function App() {
           component={LoginScreen} 
         />
         <Stack.Screen
-          options={{
-            gestureDirection: "horizontal-inverted",
-            cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
-          }}
           name="Rate"
           component={RateScreen}
         />

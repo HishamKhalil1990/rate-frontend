@@ -3,17 +3,11 @@ import {
     Text,
     StyleSheet,
     View,
-    Alert,
-    Image,
-    Button,
     Dimensions,
     TextInput,
     TouchableOpacity,
-    FlatList,
-    KeyboardAvoidingView,
 } from "react-native";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { Feather } from '@expo/vector-icons';
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AntDesign } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons'; 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -21,39 +15,49 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const width = Dimensions.get("window").width;
 
-export default Item = ({item,cat,changeCatData,setModalVisible}) => {
-    const [catTotal,setCatTotal] = useState(cat.total)
-    const [score,setScore] = useState(item.score)
-    const [maxGrade,setMaxGrade] = useState(item.maxGrade)
-    const [note,setNote] = useState(cat.note)
+export default Item = ({item,cat,changeCatData,setModalVisible,catTotal,catNote,clearNote}) => {
+    const [itemData,setItemData] = useState({score:item.score,total:cat.total})
+    const [update,setUpdate] = useState(false)
+
+    useEffect(() => {
+        if(update){
+            setUpdate(false)
+            let newCat = cat
+            newCat.questions[item.id].score = itemData.score
+            newCat.total = itemData.total
+            changeCatData(newCat)
+        }
+    },[update])
 
     const add = () => {
-        let no = score
-        if(score < maxGrade){
-            no += 1
-            setScore(no)
-            let newCat = cat
-            newCat.questions[item.id].score = no
-            let total = catTotal
+        let score = itemData.score
+        let total = catTotal
+        if(score < item.maxGrade){
+            score += 1
             total += 1
-            newCat.total = total
-            changeCatData(newCat)
+            const newData = {
+                score,
+                total
+            }
+            setItemData({...newData})
+            setUpdate(true)
         }else{
             alert('العلامة المدخلة اعلى من الحد الاعلى')
         }
       }
     
     const sub = () => {
-        let no = score
+        let score = itemData.score
+        let total = catTotal
         if(score > 0){
-            no -= 1
-            setScore(no)
-            let newCat = cat
-            newCat.questions[item.id].score = no
-            let total = catTotal
+            score -= 1
             total -= 1
-            newCat.total = total
-            changeCatData(newCat)
+            const newData = {
+                score,
+                total
+            }
+            setItemData({...newData})
+            setUpdate(true)
         }else{
             alert('الحد الادنى للعلامة هو صفر')
         }
@@ -68,7 +72,7 @@ export default Item = ({item,cat,changeCatData,setModalVisible}) => {
     }
 
     const deleteNote = () => {
-
+        clearNote()
     }
 
     return(
@@ -94,7 +98,7 @@ export default Item = ({item,cat,changeCatData,setModalVisible}) => {
                             </TouchableOpacity>
                             <View style={styles.scoreView}>
                                 <Text style={styles.scoreText}>
-                                    {score}
+                                    {itemData.score}
                                 </Text>
                             </View>
                             <TouchableOpacity 
@@ -109,7 +113,7 @@ export default Item = ({item,cat,changeCatData,setModalVisible}) => {
                         <View style={styles.addAndSubOutterView}>
                             <View style={[styles.maxGradeView,{marginRight:20,marginLeft:20}]}>
                                 <Text style={styles.maxGradeText}>
-                                    {maxGrade}
+                                    {item.maxGrade}
                                 </Text>
                             </View>
                         </View>
@@ -120,7 +124,7 @@ export default Item = ({item,cat,changeCatData,setModalVisible}) => {
                             <Text style={[styles.textStyle,{paddingRight:10}]}>
                                 الملاحظات
                             </Text>
-                            {(note == undefined) || (note == '')?
+                            {(catNote == undefined) || (catNote == '')?
                                 <TouchableOpacity
                                     onPress={() => addNote()}
                                     style={{marginRight:50}}
@@ -130,12 +134,6 @@ export default Item = ({item,cat,changeCatData,setModalVisible}) => {
                                 :
                                 <>
                                     <TouchableOpacity
-                                        onPress={() => editNote()}
-                                        style={{marginRight:50}}
-                                    >
-                                        <Feather name="edit" size={30} color="#082032" />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
                                         onPress={() => deleteNote()}
                                         style={{marginRight:50}}
                                     >
@@ -144,18 +142,25 @@ export default Item = ({item,cat,changeCatData,setModalVisible}) => {
                                 </>
                             }
                         </View>
-                        <View style={styles.textContainer}>
-                            <TextInput
-                                readOnly
-                                value={note}
-                                multiline
-                                numberOfLines={20}
-                                maxLength={500}
-                                placeholder="لا يوجد"
-                                style={[styles.text,styles.textStyle]}
-                                scrollEnabled={true}
-                            />
-                        </View>
+                        {(catNote == undefined) || (catNote == '')?
+                            <></>
+                        :
+                            <TouchableOpacity 
+                                style={styles.textContainer}
+                                onPress={editNote}
+                            >
+                                <TextInput
+                                    readOnly
+                                    value={catNote}
+                                    multiline
+                                    numberOfLines={20}
+                                    maxLength={500}
+                                    placeholder="لا يوجد"
+                                    style={[styles.text,styles.textStyle]}
+                                    scrollEnabled={true}
+                                />
+                            </TouchableOpacity>
+                        }       
                     </View>
                 }
         </SafeAreaProvider>
