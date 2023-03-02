@@ -95,7 +95,7 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
             alert('تم الارسال')
         }else{
             setLoading(false)
-            reSubmit()
+            reSubmit(response.msg)
         }
     }
 

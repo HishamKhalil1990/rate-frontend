@@ -121,7 +121,7 @@ export default function RateScreen({ navigation, route }) {
       setErrMsg('')
     }
     setLoading(true)
-    const data = await apis.getRateTemplatesData(username)
+    const data = await apis.getRateTemplatesData()
     if(data){
       setLoading(false)
       if (data.status == "success") {
