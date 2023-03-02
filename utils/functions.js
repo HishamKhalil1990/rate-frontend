@@ -141,7 +141,7 @@ const categoriesDiv = (categoriesDetails) => {
             }
         })
         detail += categoryTotal(category.total,category.maxTotal)
-        let note
+        let note = 'لا يوجد'
         if(category.note == ''){
             note = 'لا يوجد'
         }else{
