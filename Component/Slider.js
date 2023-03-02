@@ -12,9 +12,11 @@ import {
 } from "react-native";
 import { MaterialIcons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
+import * as Print from 'expo-print';
 import Item from "./Item";
 import * as apis from '../apis/apis'
 import Loader from "./Loader";
+import * as functions from '../utils/functions'
 
 const width = Dimensions.get("window").width;
 
@@ -100,7 +102,22 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
     }
 
     const makePDF = async() => {
+        const data = {
+            username,
+            branchValue,
+            names,
+            time,
+            date,
+            allCatData
+        }
+        const html = functions.createHTML(data)
+        const print = async () => {
+            await Print.printAsync({
+              html,
+            });
+        };
 
+        await print()
     }
 
     const submit = async() => {

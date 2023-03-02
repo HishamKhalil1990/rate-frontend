@@ -17,17 +17,6 @@ const width = Dimensions.get("window").width;
 
 export default Item = ({item,cat,changeCatData,setModalVisible,catTotal,catNote,clearNote}) => {
     const [itemData,setItemData] = useState({score:item.score,total:cat.total})
-    const [update,setUpdate] = useState(false)
-
-    useEffect(() => {
-        if(update){
-            setUpdate(false)
-            let newCat = cat
-            newCat.questions[item.id].score = itemData.score
-            newCat.total = itemData.total
-            changeCatData(newCat)
-        }
-    },[update])
 
     const add = () => {
         let score = itemData.score
@@ -43,7 +32,10 @@ export default Item = ({item,cat,changeCatData,setModalVisible,catTotal,catNote,
                 total
             }
             setItemData({...newData})
-            setUpdate(true)
+            let newCat = cat
+            newCat.questions[item.id].score = score
+            newCat.total = total
+            changeCatData(newCat)
         }else{
             alert('العلامة المدخلة اعلى من الحد الاعلى')
         }
@@ -63,7 +55,10 @@ export default Item = ({item,cat,changeCatData,setModalVisible,catTotal,catNote,
                 total
             }
             setItemData({...newData})
-            setUpdate(true)
+            let newCat = cat
+            newCat.questions[item.id].score = score
+            newCat.total = total
+            changeCatData(newCat)
         }else{
             alert('الحد الادنى للعلامة هو صفر')
         }
