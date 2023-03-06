@@ -132,6 +132,8 @@ const categoryNote = (note) => {
 
 const categoriesDiv = (categoriesDetails) => {
     let divs = ''
+    let total = 0
+    let maxTotal = 0
     categoriesDetails.forEach(category => {
         let detail = ""
         detail += categoryHead(category.name)
@@ -141,8 +143,10 @@ const categoriesDiv = (categoriesDetails) => {
             }
         })
         detail += categoryTotal(category.total,category.maxTotal)
+        total += category.total
+        maxTotal += category.maxTotal
         let note = 'لا يوجد'
-        if(category.note == ''){
+        if(category.note == '' | category.note == undefined){
             note = 'لا يوجد'
         }else{
             note = category.note
@@ -150,6 +154,7 @@ const categoriesDiv = (categoriesDetails) => {
         detail += categoryNote(note)
         divs += detail
     })
+    divs += categoryTotal(total,maxTotal)
     return divs
 }
 
