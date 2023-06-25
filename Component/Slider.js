@@ -251,9 +251,9 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
                             onPress={() => scrollSlider('next')}
                             style={{flex:1,flexDirection:'row',justifyContent:"center",alignItems:'center'}}
                         >
-                            <MaterialIcons name="arrow-back-ios" size={24} color="#fff" />
+                            <MaterialIcons name="arrow-forward-ios" size={24} color="#fff" />
                             <Text style={{color:'#fff',fontSize:15}}>
-                            {`Next `}
+                            {` التالي`}
                             </Text>
                         </TouchableOpacity>
                     :
@@ -298,9 +298,9 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
                         style={{flex:1,flexDirection:'row',justifyContent:"center",alignItems:'center'}}
                     >
                         <Text style={{color:'#fff',fontSize:15}}>
-                        {`Back `}
+                            {`السابق `}
                         </Text>
-                        <MaterialIcons name="arrow-forward-ios" size={24} color="#fff" />
+                        <MaterialIcons name="arrow-back-ios" size={24} color="#fff" />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
         flex:1,
         width:width,
         height:'5%',
-        flexDirection:'row-reverse',
+        flexDirection:'row',
         borderBottomWidth:3,
         backgroundColor:"#082032",
         borderBottomColor:"#082032",

@@ -128,7 +128,7 @@ export default Item = ({item,cat,changeCatData,setModalVisible,catTotal,catNote,
                             {(catNote == undefined) || (catNote == '')?
                                 <TouchableOpacity
                                     onPress={() => addNote()}
-                                    style={{marginRight:50}}
+                                    style={{marginLeft:50}}
                                 >
                                     <AntDesign name="addfile" size={30} color="#082032" />
                                 </TouchableOpacity>
@@ -136,7 +136,7 @@ export default Item = ({item,cat,changeCatData,setModalVisible,catTotal,catNote,
                                 <>
                                     <TouchableOpacity
                                         onPress={() => deleteNote()}
-                                        style={{marginRight:50}}
+                                        style={{marginLeft:50}}
                                     >
                                         <AntDesign name="delete" size={32} color="#082032" />
                                     </TouchableOpacity>
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
         flex:1,
         width:width,
         height:100,
-        flexDirection:'row-reverse',
+        flexDirection:'row',
         borderBottomWidth:1,
         borderBottomColor:"#082032"
     },
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
         flex:1,
         width:width,
         height:50,
-        flexDirection:'row-reverse',
+        flexDirection:'row',
         justifyContent:'flex-start',
         alignItems:'center',
         backgroundColor:'#fff'
@@ -216,17 +216,17 @@ const styles = StyleSheet.create({
         alignItems:'center',
       },
       addAndSubBtu:{
-        height:25,
-        width:25,
+        height:30,
+        width:30,
         flex:1,
         justifyContent:'center',
         alignItems:'center',
       },
       addAndSubView:{
-        minHeight:25,
-        minWidth:25,
-        maxHeight:25,
-        maxWidth:25,
+        minHeight:30,
+        minWidth:30,
+        maxHeight:30,
+        maxWidth:30,
         borderRadius:15,
         flex:1,
         justifyContent:'center',
