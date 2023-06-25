@@ -121,7 +121,9 @@ export default function RateScreen({ navigation, route }) {
       setErrMsg('')
     }
     setLoading(true)
-    const data = await apis.getRateTemplatesData()
+    let info = await AsyncStorage.getItem("info");
+    info = JSON.parse(info)
+    const data = await apis.getRateTemplatesData(info)
     if(data){
       setLoading(false)
       if (data.status == "success") {
@@ -284,10 +286,10 @@ export default function RateScreen({ navigation, route }) {
         >
           <Loader loading={loading} />
           <KeyboardAvoidingView enabled>
-            <View style={[styles.itemOutterView,{marginTop:10,zIndex:50}]}>
+            <View style={[styles.itemOutterView,{marginTop:30,zIndex:50}]}>
               <View>
                 <Text style={styles.itemtextView}>
-                  Branch
+                  الفرع
                 </Text>
               </View>
               <DropDownPicker
@@ -313,9 +315,9 @@ export default function RateScreen({ navigation, route }) {
             </View>
             <View style={styles.dateOutterView}>
               <View style={styles.dataInnerView}>
-                <View>
+                <View >
                   <Text style={styles.itemtextView}>
-                    Date
+                    التاريخ
                   </Text>
                 </View>
                 <View style={styles.itemInputView}>
@@ -337,7 +339,7 @@ export default function RateScreen({ navigation, route }) {
               <View style={styles.dataInnerView}>
                 <View>
                   <Text style={styles.itemtextView}>
-                    Time
+                    الوقت
                   </Text>
                 </View>
                 <View style={styles.itemInputView}>
@@ -360,7 +362,7 @@ export default function RateScreen({ navigation, route }) {
             <View style={styles.itemOutterView}>
               <View>
                 <Text style={styles.itemtextView}>
-                  No. of Employees
+                  عدد الموظفين
                 </Text>
               </View>
               <View style={styles.addAndSubOutterView}>
@@ -390,7 +392,7 @@ export default function RateScreen({ navigation, route }) {
             <View style={styles.itemOutterView}>
               <View>
                 <Text style={styles.itemtextView}>
-                  Employees Names
+                  اسماء الموظفين
                 </Text>
               </View>
               <View style={styles.employeeInputView}>
@@ -529,9 +531,9 @@ export default function RateScreen({ navigation, route }) {
                 onPress={() => goToRateInfo()}
                 style={{flex:1,flexDirection:'row',justifyContent:"center",alignItems:'center'}}
               >
-                <MaterialIcons name="arrow-back-ios" size={24} color="#fff" />
+                <MaterialIcons name="arrow-forward-ios" size={24} color="#fff" />
                 <Text style={{color:'#fff',fontSize:15}}>
-                  {`Next `}
+                  {` التالي`}
                 </Text>
               </TouchableOpacity>
             ),
@@ -541,9 +543,9 @@ export default function RateScreen({ navigation, route }) {
                 style={{flex:1,flexDirection:'row',justifyContent:"center",alignItems:'center'}}
               >
                 <Text style={{color:'#fff',fontSize:15}}>
-                  {`Logout `}
+                  {`الخروج `}
                 </Text>
-                <MaterialIcons name="arrow-forward-ios" size={24} color="#fff" />
+                <MaterialIcons name="arrow-back-ios" size={24} color="#fff" />
               </TouchableOpacity>
             ),
           }}
@@ -574,9 +576,9 @@ export default function RateScreen({ navigation, route }) {
                 style={{flex:1,flexDirection:'row',justifyContent:"center",alignItems:'center'}}
               >
                 <Text style={{color:'#fff',fontSize:15}}>
-                  {`Back `}
+                  {`السابق `}
                 </Text>
-                <MaterialIcons name="arrow-forward-ios" size={24} color="#fff" />
+                <MaterialIcons name="arrow-back-ios" size={24} color="#fff" />
               </TouchableOpacity>
             ),
           }}
@@ -634,7 +636,7 @@ const styles = StyleSheet.create({
   },
   itemOutterView:{
     width:0.85*width,
-    maxHeight:70,
+    maxHeight:90,
     flex:1,
     flexDirection:'column',
     justifyContent:'flex-start',
@@ -642,7 +644,7 @@ const styles = StyleSheet.create({
     marginBottom:40
   },
   itemtextView:{
-    marginBottom:10,
+    marginBottom:20,
     fontSize:15,
     color:'#fff'
   },
@@ -662,7 +664,7 @@ const styles = StyleSheet.create({
   },
   dateOutterView:{
     width:0.85*width,
-    maxHeight:70,
+    maxHeight:90,
     flex:1,
     flexDirection:'row',
     justifyContent:'space-between',

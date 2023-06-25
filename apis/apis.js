@@ -24,11 +24,15 @@ const getUser = async (username, password) => {
   });
 };
 
-const getRateTemplatesData = async () => {
+const getRateTemplatesData = async (data) => {
   return axios({
     url: "get-rate-questions",
     baseURL,
-    method: "GET",
+    method: "POST",
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    data:JSON.stringify(data)
   })
   .then((response) => {
     return response.data;

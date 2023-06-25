@@ -50,6 +50,7 @@ export default function LoginScreen({ navigation }) {
         const storeData = async () => {
           try {
             await AsyncStorage.setItem("username", data.username);
+            await AsyncStorage.setItem('info',JSON.stringify(data.info))
             setUser("");
             setPass("");
             navigation.navigate("Rate",{
@@ -79,7 +80,7 @@ export default function LoginScreen({ navigation }) {
           <View style={styles.userView}>
             <FontAwesome name="user-circle" size={dim * 0.85} color="black" />
           </View>
-          <Text style={styles.labelTextUser}>USER NAME</Text>
+          <Text style={styles.labelTextUser}>USERNAME</Text>
           <TextInput
             style={styles.inputUser}
             placeholder={"Username"}
@@ -154,7 +155,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   inputUser: {
-    height: 40,
+    height: 60,
     padding: 10,
     borderRadius: 20,
     fontSize: 20,
@@ -170,7 +171,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   inputPass: {
-    height: 40,
+    height: 60,
     padding: 10,
     fontSize: 20,
     fontWeight: "bold",
@@ -197,7 +198,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   loginBtu: {
-    height: 40,
+    height: 60,
     padding: 10,
     paddingLeft: 30,
     paddingRight: 30,
