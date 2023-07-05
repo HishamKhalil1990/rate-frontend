@@ -27,7 +27,6 @@ export default function CameraModule({}){
     const takePicture = async () => {
         if (!cameraRef.current) return
         const photo = await cameraRef.current.takePictureAsync()
-        console.log(photo)
         setPreviewVisible(true)
         setCapturedImage(photo)
     }
@@ -45,9 +44,12 @@ export default function CameraModule({}){
     }
 
     const savePicture = async() => {
-        const { status } = await MediaLibrary.requestPermissionsAsync();
-            if (status != 'granted') {
-            return;
+        const { status } = await MediaLibrary.getPermissionsAsync();
+        if(status != 'granted'){
+            const { status } = await MediaLibrary.requestPermissionsAsync();
+                if (status != 'granted') {
+                return;
+            }
         }
         try {
             const asset = await MediaLibrary.createAssetAsync(capturedImage.uri);
@@ -55,7 +57,7 @@ export default function CameraModule({}){
             if (album == null) {
               await MediaLibrary.createAlbumAsync('Alrayhan', asset, false);
             } else {
-              await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+              await MediaLibrary.addAssetsToAlbumAsync([asset], album, true);
             }
         } catch (e) {
             console.log(e);

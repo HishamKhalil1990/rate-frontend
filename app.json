@@ -44,6 +44,14 @@
         {
           "photosPermission": "alrayhan app accesses your photos to let you share them"
         }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow alrayhan to access your photos.",
+          "savePhotosPermission": "Allow alrayhan to save photos.",
+          "isAccessMediaLocationEnabled": true
+        }
       ]
     ]
   }
