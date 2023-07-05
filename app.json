@@ -31,6 +31,20 @@
       "eas": {
         "projectId": "40aaeb13-2f42-4646-9cd2-0226d785e1bc"
       }
-    }
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow alrayhan to access your camera."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "alrayhan app accesses your photos to let you share them"
+        }
+      ]
+    ]
   }
 }

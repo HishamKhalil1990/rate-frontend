@@ -59,7 +59,7 @@ const categoryQuestion = (questionDetail) => {
     border-top:none;padding:0in 5.4pt 0in 5.4pt;height:.2in'>
     <p class=MsoNormal align=center dir=LTR style='margin-bottom:0in;text-align:
     center;line-height:normal'><b><span style='font-size:10.0pt;font-family:"Calibri Light",sans-serif;
-    color:black'>${questionDetail.id}</span></b></p>
+    color:black'>${questionDetail.id + 1}</span></b></p>
     </td>
     <td width=297 style='width:222.9pt;border-top:none;border-left:solid windowtext 1.0pt;
     border-bottom:solid windowtext 1.0pt;border-right:none;padding:0in 5.4pt 0in 5.4pt;
@@ -81,6 +81,18 @@ const categoryQuestion = (questionDetail) => {
     <p class=MsoNormal align=center dir=LTR style='margin-bottom:0in;text-align:
     center;line-height:normal'><span lang=AR-SA dir=RTL style='font-size:10.0pt;
     font-family:"Calibri Light",sans-serif;color:black'>${questionDetail.maxGrade}</span></p>
+    </td>
+    <td style='height:.2in;border:none' width=0 height=24></td>
+    </tr>`
+}
+
+const qustionNote = (note) => {
+    return`<tr style='height:.2in'>
+    <td width=523 nowrap colspan=4 style='width:392.3pt;border:solid windowtext 1.0pt;
+    border-top:none;padding:0in 5.4pt 0in 5.4pt;height:.2in'>
+    <p class=MsoNormal align=right dir=LTR style='margin-bottom:0in;text-align:
+    right;line-height:normal'><b><span lang=AR-SA dir=RTL style='font-size:10.0pt;
+    font-family:"Calibri Light",sans-serif;color:black'>&#1605;&#1604;&#1575;&#1581;&#1592;&#1577;: ${note}</span></b></p>
     </td>
     <td style='height:.2in;border:none' width=0 height=24></td>
     </tr>`
@@ -140,18 +152,21 @@ const categoriesDiv = (categoriesDetails) => {
         category.questions.forEach((question,index) => {
             if(index < category.questions.length -1){
                 detail += categoryQuestion(question)
+                if(question.note != '' && question.note != undefined){
+                    detail += qustionNote(question.note)
+                }
             }
         })
         detail += categoryTotal(category.total,category.maxTotal)
         total += category.total
         maxTotal += category.maxTotal
-        let note = 'لا يوجد'
-        if(category.note == '' | category.note == undefined){
-            note = 'لا يوجد'
-        }else{
-            note = category.note
-        }
-        detail += categoryNote(note)
+        // let note = 'لا يوجد'
+        // if(category.note == '' | category.note == undefined){
+        //     note = 'لا يوجد'
+        // }else{
+        //     note = category.note
+        // }
+        // detail += categoryNote(note)
         divs += detail
     })
     divs += categoryTotal(total,maxTotal)

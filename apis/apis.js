@@ -26,7 +26,7 @@ const getUser = async (username, password) => {
 
 const getRateTemplatesData = async (data) => {
   return axios({
-    url: "get-rate-questions",
+    url: "/get-rate-questions",
     baseURL,
     method: "POST",
     headers: {
@@ -45,20 +45,18 @@ const getRateTemplatesData = async (data) => {
   });
 };
 
-const saveRate = async (data) => {
-  return axios({
-    url: "/save-rate",
-    baseURL,
-    method: "POST",
+const saveRate = async (formData) => {
+  return axios.post(`${baseURL}/save-rate`, formData, {
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'multipart/form-data',
     },
-    data: JSON.stringify(data),
+    timeout:10000
   })
   .then((response) => {
     return response.data;
   })
   .catch((err) => {
+    console.log(err)
     return {
       status: "falid",
       msg: "خطا اتصال"

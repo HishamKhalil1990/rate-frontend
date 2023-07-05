@@ -8,15 +8,18 @@ import {
     TouchableOpacity,
 } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { AntDesign } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons'; 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import DialogInput from 'react-native-dialog-input';
+import CameraModule from "./CameraModule";
 
 
 const width = Dimensions.get("window").width;
 
-export default Item = ({item,cat,changeCatData,setModalVisible,catTotal,catNote,clearNote}) => {
+export default Item = ({item,cat,changeCatData,catTotal}) => {
     const [itemData,setItemData] = useState({score:item.score,total:cat.total})
+    const [visible, setVisible] = useState(false)
+    const [note, setNote] = useState(item.note)
 
     const add = () => {
         let score = itemData.score
@@ -64,104 +67,93 @@ export default Item = ({item,cat,changeCatData,setModalVisible,catTotal,catNote,
         }
     }
 
-    const addNote = () => {
-        setModalVisible(true)
-    }
-
-    const editNote = () => {
-        setModalVisible(true)
-    }
-
-    const deleteNote = () => {
-        clearNote()
+    const addNote = (note) => {
+        setVisible(false)
+        setNote(note)
+        let newCat = cat
+        newCat.questions[item.id].note = note
+        changeCatData(newCat)
     }
 
     return(
         <SafeAreaProvider>
                 {item.id != item.max?
-                    <View style={styles.container}>
-                        <TextInput
-                                readOnly
-                                value={item.question}
-                                multiline
-                                numberOfLines={3}
-                                style={[styles.textStyle,{width:'60%',height:'100%',textAlignVertical:'top',padding:10}]}
-                                scrollEnabled={false}
-                        />
-                        <View style={[styles.addAndSubOutterView,{minWidth:'25%',maxWidth:'25%'}]}>
-                            <TouchableOpacity 
-                                style={styles.addAndSubBtu}
-                                onPress={add}
-                            >
-                                <View style={styles.addAndSubView}>
-                                    <FontAwesome5 name="plus" size={10} color="#fff" />
-                                </View>
-                            </TouchableOpacity>
-                            <View style={styles.scoreView}>
-                                <Text style={styles.scoreText}>
-                                    {itemData.score}
-                                </Text>
-                            </View>
-                            <TouchableOpacity 
-                                style={styles.addAndSubBtu}
-                                onPress={sub}
-                            >
-                                <View style={styles.addAndSubView}>
-                                <   MaterialCommunityIcons name="minus-thick" size={10} color="#fff" />
-                                </View>
-                            </TouchableOpacity>
-                        </View>
-                        <View style={[styles.addAndSubOutterView,{minWidth:'15%',maxWidth:'15%'}]}>
-                            <View style={[styles.maxGradeView,{marginRight:10,marginLeft:10}]}>
-                                <Text style={styles.maxGradeText}>
-                                    {item.maxGrade}
-                                </Text>
-                            </View>
-                        </View>
-                    </View>
-                :
-                    <View>
-                        <View style={styles.textButtons}>
-                            <Text style={[styles.textStyle,{paddingRight:10}]}>
-                                الملاحظات
-                            </Text>
-                            {(catNote == undefined) || (catNote == '')?
-                                <TouchableOpacity
-                                    onPress={() => addNote()}
-                                    style={{marginLeft:50}}
-                                >
-                                    <AntDesign name="addfile" size={30} color="#082032" />
-                                </TouchableOpacity>
-                                :
-                                <>
-                                    <TouchableOpacity
-                                        onPress={() => deleteNote()}
-                                        style={{marginLeft:50}}
-                                    >
-                                        <AntDesign name="delete" size={32} color="#082032" />
-                                    </TouchableOpacity>
-                                </>
-                            }
-                        </View>
-                        {(catNote == undefined) || (catNote == '')?
-                            <></>
-                        :
-                            <TouchableOpacity 
-                                style={styles.textContainer}
-                                onPress={editNote}
-                            >
-                                <TextInput
+                    <>
+
+                        <View style={styles.container}>
+                            <TextInput
                                     readOnly
-                                    value={catNote}
+                                    value={item.question}
                                     multiline
-                                    numberOfLines={20}
-                                    maxLength={500}
-                                    placeholder="لا يوجد"
-                                    style={[styles.text,styles.textStyle]}
-                                    scrollEnabled={true}
-                                />
+                                    numberOfLines={3}
+                                    style={[styles.textStyle,{width:'60%',height:'100%',textAlignVertical:'top',padding:10}]}
+                                    scrollEnabled={false}
+                            />
+                            <View style={[styles.addAndSubOutterView,{minWidth:'25%',maxWidth:'25%'}]}>
+                                <TouchableOpacity 
+                                    style={styles.addAndSubBtu}
+                                    onPress={add}
+                                >
+                                    <View style={styles.addAndSubView}>
+                                        <FontAwesome5 name="plus" size={10} color="#fff" />
+                                    </View>
+                                </TouchableOpacity>
+                                <View style={styles.scoreView}>
+                                    <Text style={styles.scoreText}>
+                                        {itemData.score}
+                                    </Text>
+                                </View>
+                                <TouchableOpacity 
+                                    style={styles.addAndSubBtu}
+                                    onPress={sub}
+                                >
+                                    <View style={styles.addAndSubView}>
+                                    <   MaterialCommunityIcons name="minus-thick" size={10} color="#fff" />
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                            <View style={[styles.addAndSubOutterView,{minWidth:'15%',maxWidth:'15%'}]}>
+                                <View style={[styles.maxGradeView,{marginRight:10,marginLeft:10}]}>
+                                    <Text style={styles.maxGradeText}>
+                                        {item.maxGrade}
+                                    </Text>
+                                </View>
+                            </View>
+                        </View>
+                        <View style={note == '' || note == undefined? styles.container : styles.noteContainer}>
+                            <DialogInput isDialogVisible={visible}
+                                title={"ملاحظة"}
+                                message={"الرجاء ادخال الملاحظة"}
+                                initValueTextInput ={note}
+                                submitText={"ADD"}
+                                submitInput={ (inputText) => {
+                                addNote(inputText)
+                                } }
+                                closeDialog={ () => {setVisible(false)}}>
+                            </DialogInput>
+                            <TouchableOpacity
+                                style={{width:'100%',height:'100%'}}
+                                onPress={() => setVisible(true)}
+                            >
+                                {note == '' || note == undefined?
+                                <Text 
+                                    style={{width:'100%',height:'100%',textAlignVertical:'top',padding:10,fontSize:15}}
+                                >
+                                    اضف ملاحظة
+                                </Text>
+                                :
+                                <Text
+                                    style={{width:'100%',height:'100%',textAlignVertical:'top',padding:10,fontSize:15,color:'#fff'}}
+                                >
+                                    {note}
+                                </Text>
+                                }
                             </TouchableOpacity>
-                        }       
+                        </View>
+                    </>
+                :
+                    <View style={styles.container}>
+                        <CameraModule></CameraModule>
                     </View>
                 }
         </SafeAreaProvider>
@@ -176,6 +168,14 @@ const styles = StyleSheet.create({
         flexDirection:'row',
         borderBottomWidth:1,
         borderBottomColor:"#082032"
+    },
+    noteContainer:{
+        flex:1,
+        width:width,
+        height:100,
+        flexDirection:'row',
+        borderBottomWidth:1,
+        backgroundColor:"#082032"
     },
     textStyle:{
         color:"#082032",

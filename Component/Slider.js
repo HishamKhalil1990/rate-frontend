@@ -17,11 +17,13 @@ import Item from "./Item";
 import * as apis from '../apis/apis'
 import Loader from "./Loader";
 import * as functions from '../utils/functions'
+import * as ImagePicker from 'expo-image-picker';
 
 const width = Dimensions.get("window").width;
 
 let allCatData = []
 let sendAction = false
+let rateFinal = 0
 
 export default Slider = ({data,changeData,username,branchValue,time,date,names}) => {
     const [catData,setCatData] = useState(data)
@@ -34,6 +36,9 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
     useEffect(() => {
         data.forEach(cat => {
             allCatData.push(cat)
+            const total = allCatData.reduce((acc,cat) => acc + cat.total,0)
+            const maxTotal = allCatData.reduce((acc,cat) => acc + cat.maxTotal,0)
+            rateFinal = parseFloat(total*100/maxTotal).toFixed(2)
         })
         return () => {
             changeData(allCatData,sendAction)
@@ -57,7 +62,7 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
         setCat(catData[newIndex])
     }
 
-    const reSubmit = async(msg) => {
+    const reSubmit = async(msg,withImages) => {
         Alert.alert(
           'اعادة ارسال',
           `${msg} هل تريد اعادة الارسال ؟`,
@@ -71,7 +76,7 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
             {
               text: 'Confirm',
               onPress: () => {
-                return sendData()
+                return sendData(withImages)
               },
             },
           ],
@@ -79,7 +84,40 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
         );
     }
 
-    async function sendData(){
+    const pickImage = async (formData) => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+          alert('Permission denied');
+          return;
+        }
+      
+        const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsMultipleSelection: true, // Enable multiple image selection
+          orderedSelection:true,
+          aspect: [1, 1],
+          quality: 1,
+        });
+      
+        if (!result.canceled) {
+          for (let i = 0; i < result.assets.length; i++) {
+            const selectedImage = result.assets[i];
+            formData.append('images', {
+              uri: selectedImage.uri,
+              type: 'image/jpeg',
+              name: `img_${i}.jpg`,
+            });
+          }
+          return formData
+        }
+    };
+
+    async function sendData(withImages){
+        setLoading(true)
+        let formData = new FormData()
+        if(withImages){
+            formData = await pickImage(formData)
+        }
         const data = {
             username,
             branchValue,
@@ -88,8 +126,8 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
             date,
             allCatData
         }
-        setLoading(true)
-        const response = await apis.saveRate(data)
+        formData.append('data',JSON.stringify(data))
+        const response = await apis.saveRate(formData)
         if(response.status == "success"){
             setLoading(false)
             setSent(true)
@@ -97,7 +135,7 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
             alert('تم الارسال')
         }else{
             setLoading(false)
-            reSubmit(response.msg)
+            reSubmit(response.msg,withImages)
         }
     }
 
@@ -132,10 +170,16 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
               },
             },
             {
-              text: 'Confirm',
+              text: 'ADD images',
               onPress: () => {
-                return sendData()
+                return sendData(true)
               },
+            },
+            {
+                text: 'Continue',
+                onPress: () => {
+                  return sendData(false)
+                },
             },
           ],
           {cancelable: false},
@@ -143,41 +187,30 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
     }
     
     const Category = () => {
-        const [modalVisible, setModalVisible] = useState(false);
-        const [note,setNote] = useState(cat.note)
-        const [editNote,setEditNote] = useState(cat.note)
         const [editCat,setEditCat] = useState(cat)
         const [total,setTotal] = useState(cat.total)
+        const [rateTotal,setRateTotal] = useState(0)
 
         useEffect(() => {
+            setRateTotal(rateFinal)
             return () => setCatData(allCatData)
         },[])
-
-        const saveNote = (action) => {
-            if(action == 'yes'){
-                const newCat = cat
-                newCat.note = editNote
-                setNote(editNote)
-                setEditCat({...newCat})
-                allCatData[editCat.id] = newCat
-            }else{
-                setEditNote(note)
-            }
-        }
 
         const changeCatData = (newCat) => {
             setTotal(newCat.total)
             setEditCat({...newCat})
             allCatData[editCat.id] = newCat
-        }
-
-        const clearNote = () => {
-            setEditNote('')
-            setNote('')
+            const total = allCatData.reduce((acc,cat) => acc + cat.total,0)
+            const maxTotal = allCatData.reduce((acc,cat) => acc + cat.maxTotal,0)
+            rateFinal = parseFloat(total*100/maxTotal).toFixed(2)
+            setRateTotal(rateFinal)
         }
         
         return(
             <View style={styles.Catcontainer}>
+                <View style={styles.branchHeader}>
+                    <Text style={{height:'100%',width:'100%',textAlign:'center',textAlignVertical:'center',color:'#fff'}}>{`${branchValue} (${rateTotal}%)`}</Text>
+                </View>
                 <View style={styles.nameCatContainer}>
                     <Text style={styles.nameText}>
                         {cat.name}
@@ -191,7 +224,7 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
                 <View style={styles.sliderCatContainer}>
                     <FlatList
                         data={cat.questions}
-                        renderItem={({item}) => <Item item={item} cat={cat} changeCatData={changeCatData} setModalVisible={setModalVisible} catTotal={total} catNote={note} clearNote={clearNote}/>}
+                        renderItem={({item}) => <Item item={item} cat={cat} changeCatData={changeCatData} catTotal={total}/>}
                         keyExtractor={item => item.id}
                         scrollEnabled={true}
                     />
@@ -201,7 +234,7 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
                         {`المجموع ${total} / ${cat.maxTotal}`}
                     </Text>
                 </View>
-                <Modal
+                {/* <Modal
                     animationType="slide"
                     transparent={true}
                     visible={modalVisible}
@@ -232,7 +265,7 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
                             </View>
                         </View>
                     </View>   
-                </Modal>
+                </Modal> */}
             </View>
         )
     }
@@ -352,6 +385,16 @@ const styles = StyleSheet.create({
         color:"#082032",
         borderBottomColor:"#082032",
         borderBottomWidth:3
+    },
+    branchHeader:{
+        flex:1,
+        width:width,
+        height:'5%',
+        flexDirection:'row',
+        justifyContent:'center',
+        borderBottomWidth:3,
+        backgroundColor:"#082032",
+        borderBottomColor:"#082032",
     },
     header:{
         flex:1,
