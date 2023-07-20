@@ -187,6 +187,9 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
     }
     
     const Category = () => {
+        const [modalVisible, setModalVisible] = useState(false);
+        const [note,setNote] = useState(cat.note)
+        const [editNote,setEditNote] = useState(cat.note)
         const [editCat,setEditCat] = useState(cat)
         const [total,setTotal] = useState(cat.total)
         const [rateTotal,setRateTotal] = useState(0)
@@ -195,6 +198,23 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
             setRateTotal(rateFinal)
             return () => setCatData(allCatData)
         },[])
+
+        const saveNote = (action) => {
+            if(action == 'yes'){
+                const newCat = cat
+                newCat.note = editNote
+                setNote(editNote)
+                setEditCat({...newCat})
+                allCatData[editCat.id] = newCat
+            }else{
+                setEditNote(note)
+            }
+        }
+
+        const clearNote = () => {
+            setEditNote('')
+            setNote('')
+        }
 
         const changeCatData = (newCat) => {
             setTotal(newCat.total)
@@ -224,7 +244,7 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
                 <View style={styles.sliderCatContainer}>
                     <FlatList
                         data={cat.questions}
-                        renderItem={({item}) => <Item item={item} cat={cat} changeCatData={changeCatData} catTotal={total}/>}
+                        renderItem={({item}) => <Item item={item} cat={cat} changeCatData={changeCatData} catTotal={total} setModalVisible={setModalVisible} catNote={note} clearNote={clearNote}/>}
                         keyExtractor={item => item.id}
                         scrollEnabled={true}
                     />
@@ -234,7 +254,7 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
                         {`المجموع ${total} / ${cat.maxTotal}`}
                     </Text>
                 </View>
-                {/* <Modal
+                <Modal
                     animationType="slide"
                     transparent={true}
                     visible={modalVisible}
@@ -265,7 +285,7 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
                             </View>
                         </View>
                     </View>   
-                </Modal> */}
+                </Modal>
             </View>
         )
     }
