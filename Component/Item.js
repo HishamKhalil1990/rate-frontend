@@ -8,6 +8,7 @@ import {
     TouchableOpacity,
 } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { AntDesign } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons'; 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DialogInput from 'react-native-dialog-input';
@@ -16,7 +17,7 @@ import CameraModule from "./CameraModule";
 
 const width = Dimensions.get("window").width;
 
-export default Item = ({item,cat,changeCatData,catTotal}) => {
+export default Item = ({item,cat,changeCatData,catTotal,setModalVisible,catNote,clearNote}) => {
     const [itemData,setItemData] = useState({score:item.score,total:cat.total})
     const [visible, setVisible] = useState(false)
     const [note, setNote] = useState(item.note)
@@ -73,6 +74,18 @@ export default Item = ({item,cat,changeCatData,catTotal}) => {
         let newCat = cat
         newCat.questions[item.id].note = note
         changeCatData(newCat)
+    }
+
+    const addCatNote = () => {
+        setModalVisible(true)
+    }
+
+    const editNote = () => {
+        setModalVisible(true)
+    }
+
+    const deleteNote = () => {
+        clearNote()
     }
 
     return(
@@ -152,9 +165,54 @@ export default Item = ({item,cat,changeCatData,catTotal}) => {
                         </View>
                     </>
                 :
-                    <View style={styles.container}>
-                        <CameraModule></CameraModule>
-                    </View>
+                    <>
+                        <View>
+                            <View style={styles.textButtons}>
+                                <Text style={[styles.textStyle,{paddingRight:10}]}>
+                                    الملاحظات
+                                </Text>
+                                {(catNote == undefined) || (catNote == '')?
+                                    <TouchableOpacity
+                                        onPress={() => addCatNote()}
+                                        style={{marginRight:50}}
+                                    >
+                                        <AntDesign name="addfile" size={30} color="#082032" />
+                                    </TouchableOpacity>
+                                    :
+                                    <>
+                                        <TouchableOpacity
+                                            onPress={() => deleteNote()}
+                                            style={{marginRight:50}}
+                                        >
+                                            <AntDesign name="delete" size={32} color="#082032" />
+                                        </TouchableOpacity>
+                                    </>
+                                }
+                            </View>
+                            {(catNote == undefined) || (catNote == '')?
+                                <></>
+                            :
+                                <TouchableOpacity 
+                                    style={styles.textContainer}
+                                    onPress={editNote}
+                                >
+                                    <TextInput
+                                        readOnly
+                                        value={catNote}
+                                        multiline
+                                        numberOfLines={20}
+                                        maxLength={500}
+                                        placeholder="لا يوجد"
+                                        style={[styles.text,styles.textStyle]}
+                                        scrollEnabled={true}
+                                    />
+                                </TouchableOpacity>
+                            }       
+                        </View>
+                        <View style={styles.container}>
+                            <CameraModule></CameraModule>
+                        </View>
+                    </>
                 }
         </SafeAreaProvider>
     )
