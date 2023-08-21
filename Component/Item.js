@@ -11,8 +11,9 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AntDesign } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons'; 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import DialogInput from 'react-native-dialog-input';
 import CameraModule from "./CameraModule";
+import Dialog from "react-native-dialog";
+import ModalDropdown from 'react-native-modal-dropdown';
 
 
 const width = Dimensions.get("window").width;
@@ -68,7 +69,11 @@ export default Item = ({item,cat,changeCatData,catTotal,setModalVisible,catNote,
         }
     }
 
-    const addNote = (note) => {
+    const addNote = (index) => {
+        let note = item.answers[index]
+        if(note == 'لا يوجد'){
+            note = ''
+        }
         setVisible(false)
         setNote(note)
         let newCat = cat
@@ -134,16 +139,14 @@ export default Item = ({item,cat,changeCatData,catTotal,setModalVisible,catNote,
                             </View>
                         </View>
                         <View style={note == '' || note == undefined? styles.container : styles.noteContainer}>
-                            <DialogInput isDialogVisible={visible}
-                                title={"ملاحظة"}
-                                message={"الرجاء ادخال الملاحظة"}
-                                initValueTextInput ={note}
-                                submitText={"ADD"}
-                                submitInput={ (inputText) => {
-                                addNote(inputText)
-                                } }
-                                closeDialog={ () => {setVisible(false)}}>
-                            </DialogInput>
+                            <Dialog.Container visible={visible}>
+                                <ModalDropdown 
+                                    options={item.answers} 
+                                    onSelect={index => {addNote(index)}}
+                                    dropdownTextStyle={{fontSize:15}}
+                                />
+                                <Dialog.Button label="Cancel" onPress={() => {setVisible(false)}} />
+                            </Dialog.Container>
                             <TouchableOpacity
                                 style={{width:'100%',height:'100%'}}
                                 onPress={() => setVisible(true)}

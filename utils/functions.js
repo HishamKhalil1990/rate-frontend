@@ -63,7 +63,7 @@ const categoryQuestion = (questionDetail) => {
     </td>
     <td width=297 style='width:222.9pt;border-top:none;border-left:solid windowtext 1.0pt;
     border-bottom:solid windowtext 1.0pt;border-right:none;padding:0in 5.4pt 0in 5.4pt;
-    height:.2in'>
+    height:.8in'>
     <p class=MsoNormal dir=RTL style='margin-bottom:0in;text-align:right;
     line-height:normal;direction:rtl;unicode-bidi:embed'><span lang=AR-SA
     style='font-size:10.0pt;font-family:"Calibri Light",sans-serif;color:black'>${questionDetail.question}</span></p>
@@ -88,7 +88,7 @@ const categoryQuestion = (questionDetail) => {
 
 const qustionNote = (note) => {
     return`<tr style='height:.2in'>
-    <td width=523 nowrap colspan=4 style='width:392.3pt;border:solid windowtext 1.0pt;
+    <td width=523 wrap colspan=4 style='width:392.3pt;border:solid windowtext 1.0pt;
     border-top:none;padding:0in 5.4pt 0in 5.4pt;height:.2in'>
     <p class=MsoNormal align=right dir=LTR style='margin-bottom:0in;text-align:
     right;line-height:normal'><b><span lang=AR-SA dir=RTL style='font-size:10.0pt;
@@ -132,7 +132,7 @@ const categoryTotal = (questionTotal,questionTotalMax) => {
 
 const categoryNote = (note) => {
     return`<tr style='height:.2in'>
-    <td width=523 nowrap colspan=4 style='width:392.3pt;border:solid windowtext 1.0pt;
+    <td width=523 wrap colspan=4 style='width:392.3pt;border:solid windowtext 1.0pt;
     border-top:none;padding:0in 5.4pt 0in 5.4pt;height:.2in'>
     <p class=MsoNormal align=right dir=LTR style='margin-bottom:0in;text-align:
     right;line-height:normal'><b><span lang=AR-SA dir=RTL style='font-size:10.0pt;
@@ -160,13 +160,13 @@ const categoriesDiv = (categoriesDetails) => {
         detail += categoryTotal(category.total,category.maxTotal)
         total += category.total
         maxTotal += category.maxTotal
-        // let note = 'لا يوجد'
-        // if(category.note == '' | category.note == undefined){
-        //     note = 'لا يوجد'
-        // }else{
-        //     note = category.note
-        // }
-        // detail += categoryNote(note)
+        let note = 'لا يوجد'
+        if(category.note == '' | category.note == undefined){
+            note = 'لا يوجد'
+        }else{
+            note = category.note
+        }
+        detail += categoryNote(note)
         divs += detail
     })
     divs += categoryTotal(total,maxTotal)
