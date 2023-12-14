@@ -26,12 +26,26 @@ import { Feather } from '@expo/vector-icons';
 import { Fontisto } from '@expo/vector-icons';
 import Loader from '../Component/Loader'
 import Slider from "../Component/Slider";
+import * as Location from 'expo-location';
 
 const width = Dimensions.get("window").width;
 const height = Dimensions.get("window").height;
 const Stack = createStackNavigator();
 
 export default function RateScreen({ navigation, route }) {
+
+  useEffect(() => {
+    (async () => {
+      
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (!(status === 'granted')) {
+        AsyncStorage.clear();
+        navigation.navigate("Login");
+        alert('Permission to access location was denied');
+      }
+    })();
+  }, []);
+
   const [username, setUsername] = useState(route.params.username);
   const [loading, setLoading] = useState(false);
   const [fetcheddata, setFetchedData] = useState(route.params.data)
@@ -50,12 +64,7 @@ export default function RateScreen({ navigation, route }) {
   const [errMsg, setErrMsg] = useState('')
 
   useEffect(() => {
-    if(fetcheddata !== undefined){
-      branchesList(fetcheddata.branches)
-      setRateData(fetcheddata.categories)
-    }else{
-      newAtempt()
-    }
+    newAtempt()
   }, []);
 
   const clear = () => {

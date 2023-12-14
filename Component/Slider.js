@@ -18,6 +18,7 @@ import * as apis from '../apis/apis'
 import Loader from "./Loader";
 import * as functions from '../utils/functions'
 import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
 
 const width = Dimensions.get("window").width;
 
@@ -113,29 +114,38 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
     };
 
     async function sendData(withImages){
-        setLoading(true)
-        let formData = new FormData()
-        if(withImages){
-            formData = await pickImage(formData)
-        }
-        const data = {
-            username,
-            branchValue,
-            names,
-            time,
-            date,
-            allCatData
-        }
-        formData.append('data',JSON.stringify(data))
-        const response = await apis.saveRate(formData)
-        if(response.status == "success"){
-            setLoading(false)
-            setSent(true)
-            sendAction = true
-            alert('تم الارسال')
+        let location = await Location.getCurrentPositionAsync({});
+        if( location?.coords){
+            setLoading(true)
+            let formData = new FormData()
+            if(withImages){
+                formData = await pickImage(formData)
+            }
+            const long = location.coords.longitude;
+            const lat = location.coords.latitude
+            const data = {
+                username,
+                branchValue,
+                names,
+                time,
+                date,
+                allCatData,
+                long,
+                lat
+            }
+            formData.append('data',JSON.stringify(data))
+            const response = await apis.saveRate(formData)
+            if(response.status == "success"){
+                setLoading(false)
+                setSent(true)
+                sendAction = true
+                alert('تم الارسال')
+            }else{
+                setLoading(false)
+                reSubmit(response.msg,withImages)
+            }
         }else{
-            setLoading(false)
-            reSubmit(response.msg,withImages)
+            alert('Could not Obtain Location!, Check your Location Service on');
         }
     }
 
