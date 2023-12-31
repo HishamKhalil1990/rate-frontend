@@ -54,7 +54,7 @@ export default function LoginScreen({ navigation }) {
             setUser("");
             setPass("");
             navigation.navigate("Rate",{
-              username:user,
+              username:data.username,
               data:data.data
             });
           } catch (e) {

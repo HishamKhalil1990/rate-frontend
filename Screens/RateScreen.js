@@ -31,8 +31,59 @@ import * as Location from 'expo-location';
 const width = Dimensions.get("window").width;
 const height = Dimensions.get("window").height;
 const Stack = createStackNavigator();
+let intervalID;
+
+const calculateDistance = (latitude1, longitude1, latitude2, longitude2) => {
+  function toRadians(degrees) {
+      return degrees * Math.PI / 180;
+  }
+
+  var earthRadius = 6371e3; // Earth's radius in meters
+  var lat1Radians = toRadians(latitude1);
+  var lat2Radians = toRadians(latitude2);
+  var deltaLatRadians = toRadians(latitude2 - latitude1);
+  var deltaLonRadians = toRadians(longitude2 - longitude1);
+
+  var a = Math.sin(deltaLatRadians / 2) * Math.sin(deltaLatRadians / 2) +
+          Math.cos(lat1Radians) * Math.cos(lat2Radians) *
+          Math.sin(deltaLonRadians / 2) * Math.sin(deltaLonRadians / 2);
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return parseFloat(earthRadius * c).toFixed(0); // Distance in meters
+}
+
+const clearGPSInterval = () => {
+  if(intervalID){
+    clearInterval(intervalID)
+  }
+}
 
 export default function RateScreen({ navigation, route }) {
+
+  const [locations,setLocations] = useState({})
+  const [checkLocation,setCheckLocation] = useState(false)
+  const [branchValue, setBranchValue] = useState(null);
+  const [distanceToBranch, setDistanceToBranch] = useState(null);
+  const [rateAllowable, setRateAllowable] = useState(false);
+  const [allowableDistance, setAllowableDistance] = useState(100);
+
+  const saveGPS = async() => {
+    let location = await Location.getCurrentPositionAsync({});
+    if( location?.coords){
+      if(branchValue != null){
+        const branchLocation = locations[branchValue]
+        let distance = calculateDistance(branchLocation['lat'],branchLocation['long'],location.coords.latitude,location.coords.longitude)
+        distance = distance - 100 < 0? 0: distance - 100
+        setDistanceToBranch(distance)
+        const isAllowed = distance <= allowableDistance? true : false
+        setRateAllowable(isAllowed)
+        // alert(`you are ${distance}m away from your distnation, the allowable distance is ${100}m , ${isAllowed}`)
+      }else{
+        setBranchValue(null)
+        clearGPSInterval()
+      }
+    }
+  }
 
   useEffect(() => {
     (async () => {
@@ -44,6 +95,8 @@ export default function RateScreen({ navigation, route }) {
         alert('Permission to access location was denied');
       }
     })();
+
+    return () => clearGPSInterval()
   }, []);
 
   const [username, setUsername] = useState(route.params.username);
@@ -55,7 +108,6 @@ export default function RateScreen({ navigation, route }) {
   const [timePicker, setTimePicker] = useState(false);
   const [time, setTime] = useState(new Date(Date.now()));
   const [branchOpen, setBranchOpen] = useState(false);
-  const [branchValue, setBranchValue] = useState(null);
   const [branch, setBranch] = useState([]);
   const [noOfemployee, setNoOfemployee] = useState(1);
   const [names, setNames] = useState([]);
@@ -80,6 +132,16 @@ export default function RateScreen({ navigation, route }) {
   useEffect(() => {
     clear()
   }, [fetcheddata]);
+
+  useEffect(() => {
+    clearGPSInterval()
+    if(checkLocation){
+      intervalID = setInterval(async() => {
+        saveGPS()
+      },1000)
+      saveGPS()
+    }
+  },[branchValue])
 
   const branchesList = (fetchedBranches) => {
     const branches = fetchedBranches.map((branch,index) => {
@@ -121,7 +183,11 @@ export default function RateScreen({ navigation, route }) {
     }else if(names.length < noOfemployee){
       alert('الرجاء تعبئة اسماء الموظفين كاملة')
     }else{
-      navigation.navigate("RateInfo")
+      if(rateAllowable || !checkLocation){
+        navigation.navigate("RateInfo")
+      }else{
+        alert(`you are ${distanceToBranch}m away from your distnation, the allowable distance is ${allowableDistance}m , you'er not allowed`)
+      }
     }
   }
 
@@ -137,6 +203,8 @@ export default function RateScreen({ navigation, route }) {
       setLoading(false)
       if (data.status == "success") {
         branchesList(data.data.branches)
+        setLocations(data.data.locations? {...data.data.locations} : {})
+        setCheckLocation(data.checkLocation? data.checkLocation : false)
         setRateData([...data.data.categories])
         setFetchedData({...data.data})
       }else{
@@ -301,6 +369,29 @@ export default function RateScreen({ navigation, route }) {
                   الفرع
                 </Text>
               </View>
+              {branchValue != null && checkLocation?
+                <View style={styles.location}>
+                  <View style={styles.locationView}>
+                    <View style={styles.locationContainerView}>
+                        <View style={styles.locationInnerView}>
+                          <View>
+                            <FontAwesome5 name="walking" size={20} color="black" />
+                          </View>
+                          <View>
+                            <Text style={{color:rateAllowable? 'green' : 'red'}}>
+                              {distanceToBranch} m
+                            </Text>
+                          </View>
+                          <View>
+                            <Entypo name="location-pin" size={20} color="red" />
+                          </View>
+                        </View>
+                    </View>
+                  </View>
+                </View>
+              :
+                <></>
+              }
               <DropDownPicker
                 itemKey="key"
                 searchable={true}
@@ -845,5 +936,33 @@ const styles = StyleSheet.create({
   },
   button2:{
     backgroundColor:'red'
+  },
+  location:{
+    position:'relative'
+  },
+  locationView:{
+    position:'absolute',
+    bottom:10
+  },
+  locationContainerView:{
+    minWidth:0.85*width,
+    minHeight:20,
+    maxHeight:20,
+    display:'flex',
+    flexDirection:'row',
+    justifyContent:'center',
+    alignItems:'center',
+  },
+  locationInnerView:{
+    marginTop:5,
+    maxWidth:0.4*width,
+    minHeight:20,
+    maxHeight:20,
+    borderRadius:5,
+    flex:1,
+    flexDirection:'row',
+    justifyContent:'space-around',
+    alignItems:'center',
+    backgroundColor:'#fff'
   },
 });
