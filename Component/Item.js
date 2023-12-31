@@ -11,8 +11,10 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AntDesign } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons'; 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import DialogInput from 'react-native-dialog-input';
 import CameraModule from "./CameraModule";
+import Dialog from "react-native-dialog";
+import ModalDropdown from 'react-native-modal-dropdown';
+import DialogInput from 'react-native-dialog-input';
 
 
 const width = Dimensions.get("window").width;
@@ -21,6 +23,7 @@ export default Item = ({item,cat,changeCatData,catTotal,setModalVisible,catNote,
     const [itemData,setItemData] = useState({score:item.score,total:cat.total})
     const [visible, setVisible] = useState(false)
     const [note, setNote] = useState(item.note)
+    const [choices,setChoices] = useState(item.answers?.length > 0? true : false)
 
     const add = () => {
         let score = itemData.score
@@ -68,7 +71,19 @@ export default Item = ({item,cat,changeCatData,catTotal,setModalVisible,catNote,
         }
     }
 
-    const addNote = (note) => {
+    const addNote = (index) => {
+        let note = item.answers[index]
+        if(note == 'لا يوجد'){
+            note = ''
+        }
+        setVisible(false)
+        setNote(note)
+        let newCat = cat
+        newCat.questions[item.id].note = note
+        changeCatData(newCat)
+    }
+
+    const addTextNote = (note) => {
         setVisible(false)
         setNote(note)
         let newCat = cat
@@ -133,36 +148,67 @@ export default Item = ({item,cat,changeCatData,catTotal,setModalVisible,catNote,
                                 </View>
                             </View>
                         </View>
-                        <View style={note == '' || note == undefined? styles.container : styles.noteContainer}>
-                            <DialogInput isDialogVisible={visible}
-                                title={"ملاحظة"}
-                                message={"الرجاء ادخال الملاحظة"}
-                                initValueTextInput ={note}
-                                submitText={"ADD"}
-                                submitInput={ (inputText) => {
-                                addNote(inputText)
-                                } }
-                                closeDialog={ () => {setVisible(false)}}>
-                            </DialogInput>
-                            <TouchableOpacity
-                                style={{width:'100%',height:'100%'}}
-                                onPress={() => setVisible(true)}
-                            >
-                                {note == '' || note == undefined?
-                                <Text 
-                                    style={{width:'100%',height:'100%',textAlignVertical:'top',padding:10,fontSize:15}}
+                        {choices?
+                            <View style={note == '' || note == undefined? styles.container : styles.noteContainer}>
+                                <Dialog.Container visible={visible}>
+                                    <ModalDropdown 
+                                        options={item.answers} 
+                                        onSelect={index => {addNote(index)}}
+                                        dropdownTextStyle={{fontSize:15}}
+                                    />
+                                    <Dialog.Button label="Cancel" onPress={() => {setVisible(false)}} />
+                                </Dialog.Container>
+                                <TouchableOpacity
+                                    style={{width:'100%',height:'100%'}}
+                                    onPress={() => setVisible(true)}
                                 >
-                                    اضف ملاحظة
-                                </Text>
-                                :
-                                <Text
-                                    style={{width:'100%',height:'100%',textAlignVertical:'top',padding:10,fontSize:15,color:'#fff'}}
+                                    {note == '' || note == undefined?
+                                    <Text 
+                                        style={{width:'100%',height:'100%',textAlignVertical:'top',padding:10,fontSize:15}}
+                                    >
+                                        اضف ملاحظة
+                                    </Text>
+                                    :
+                                    <Text
+                                        style={{width:'100%',height:'100%',textAlignVertical:'top',padding:10,fontSize:15,color:'#fff'}}
+                                    >
+                                        {note}
+                                    </Text>
+                                    }
+                                </TouchableOpacity>
+                            </View>
+                        :
+                            <View style={note == '' || note == undefined? styles.container : styles.noteContainer}>
+                                <DialogInput isDialogVisible={visible}
+                                    title={"ملاحظة"}
+                                    message={"الرجاء ادخال الملاحظة"}
+                                    initValueTextInput ={note}
+                                    submitText={"ADD"}
+                                    submitInput={ (inputText) => {
+                                        addTextNote(inputText)
+                                    } }
+                                    closeDialog={ () => {setVisible(false)}}>
+                                </DialogInput>
+                                <TouchableOpacity
+                                    style={{width:'100%',height:'100%'}}
+                                    onPress={() => setVisible(true)}
                                 >
-                                    {note}
-                                </Text>
-                                }
-                            </TouchableOpacity>
-                        </View>
+                                    {note == '' || note == undefined?
+                                    <Text 
+                                        style={{width:'100%',height:'100%',textAlignVertical:'top',padding:10,fontSize:15}}
+                                    >
+                                        اضف ملاحظة
+                                    </Text>
+                                    :
+                                    <Text
+                                        style={{width:'100%',height:'100%',textAlignVertical:'top',padding:10,fontSize:15,color:'#fff'}}
+                                    >
+                                        {note}
+                                    </Text>
+                                    }
+                                </TouchableOpacity>
+                            </View>
+                        }
                     </>
                 :
                     <>
