@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseURL = "http://localhost:3030/rate";
+const baseURL = "http://localhost:3030/rate"; 
 
 const getUser = async (username, password) => {
   let data = { username, password };
@@ -50,7 +50,7 @@ const saveRate = async (formData) => {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
-    timeout:10000
+    // timeout:10000
   })
   .then((response) => {
     return response.data;

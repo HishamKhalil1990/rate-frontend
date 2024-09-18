@@ -26,7 +26,27 @@ let allCatData = []
 let sendAction = false
 let rateFinal = 0
 
-export default Slider = ({data,changeData,username,branchValue,time,date,names}) => {
+const calculateDistance = (latitude1, longitude1, latitude2, longitude2) => {
+    function toRadians(degrees) {
+        return degrees * Math.PI / 180;
+    }
+  
+    var earthRadius = 6371e3; // Earth's radius in meters
+    var lat1Radians = toRadians(latitude1);
+    var lat2Radians = toRadians(latitude2);
+    var deltaLatRadians = toRadians(latitude2 - latitude1);
+    var deltaLonRadians = toRadians(longitude2 - longitude1);
+  
+    var a = Math.sin(deltaLatRadians / 2) * Math.sin(deltaLatRadians / 2) +
+            Math.cos(lat1Radians) * Math.cos(lat2Radians) *
+            Math.sin(deltaLonRadians / 2) * Math.sin(deltaLonRadians / 2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  
+    return parseFloat(earthRadius * c).toFixed(0); // Distance in meters
+  }
+
+export default Slider = ({data,changeData,username,branchValue,time,date,names,branchLocation,allowableDistance,checkLocation}) => {
+    const [isChecked, setIsChecked] = useState(checkLocation)
     const [catData,setCatData] = useState(data)
     const [cat,setCat] = useState(data[0])
     const [maxSlidesNo,setMaxSlidesNo] = useState(data[0].max)
@@ -116,33 +136,41 @@ export default Slider = ({data,changeData,username,branchValue,time,date,names})
     async function sendData(withImages){
         let location = await Location.getCurrentPositionAsync({});
         if( location?.coords){
-            setLoading(true)
-            let formData = new FormData()
-            if(withImages){
-                formData = await pickImage(formData)
-            }
-            const long = location.coords.longitude;
-            const lat = location.coords.latitude
-            const data = {
-                username,
-                branchValue,
-                names,
-                time,
-                date,
-                allCatData,
-                long,
-                lat
-            }
-            formData.append('data',JSON.stringify(data))
-            const response = await apis.saveRate(formData)
-            if(response.status == "success"){
-                setLoading(false)
-                setSent(true)
-                sendAction = true
-                alert('تم الارسال')
+            let distance = calculateDistance(branchLocation['lat'],branchLocation['long'],location.coords.latitude,location.coords.longitude)
+            distance = distance - 100 < 0? 0: distance - 100
+            const isAllowed = distance <= allowableDistance? true : false
+            if(isAllowed || !isChecked){
+                setLoading(true)
+                let formData = new FormData()
+                if(withImages){
+                    formData = await pickImage(formData)
+                }
+                const long = location.coords.longitude;
+                const lat = location.coords.latitude
+                const data = {
+                    username,
+                    branchValue,
+                    names,
+                    time,
+                    date,
+                    allCatData,
+                    long,
+                    lat
+                }
+                formData.append('data',JSON.stringify(data))
+                const response = await apis.saveRate(formData)
+                if(response.status == "success"){
+                    setLoading(false)
+                    setSent(true)
+                    sendAction = true
+                    alert('تم الارسال')
+                }else{
+                    setLoading(false)
+                    reSubmit(response.msg,withImages)
+                }
             }else{
-                setLoading(false)
-                reSubmit(response.msg,withImages)
+                alert(`انت بعيد ${distance}م عن الوجهة المدخلة. النطاق المسموح به ${allowableDistance}م. غير مسموح بارسال التقييم`)
+                // alert(`you are ${distanceToBranch}m away from your distnation, the allowable distance is ${allowableDistance}m , you'er not allowed`)
             }
         }else{
             alert('Could not Obtain Location!, Check your Location Service on');

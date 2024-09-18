@@ -1,4 +1,4 @@
-import {Camera} from 'expo-camera'
+import {CameraView, useCameraPermissions, Camera} from 'expo-camera'
 import {StyleSheet, Text, View, TouchableOpacity, Dimensions, ImageBackground} from 'react-native'
 import { useState, useRef } from 'react'
 import { Feather } from '@expo/vector-icons';
@@ -13,14 +13,21 @@ export default function CameraModule({}){
     const [startCamera, setStartCamera] = useState(false)
     const [previewVisible, setPreviewVisible] = useState(false)
     const [capturedImage, setCapturedImage] = useState(null)
+    const [permission, requestPermission] = useCameraPermissions();
+    const [facing, setFacing] = useState('back');
 
     const startCameraFunc = async () => {
-        const {status} = await Camera.requestCameraPermissionsAsync()
-        if (status === 'granted') {
+        if (permission.granted) {
           // start the camera
           setStartCamera(true)
         } else {
-          alert('Access denied')
+          const {status} = await Camera.requestCameraPermissionsAsync()
+          if (status === 'granted') {
+            // start the camera
+            setStartCamera(true)
+          } else {
+            alert('Access denied')
+          }
         }
     }
 
@@ -143,9 +150,10 @@ export default function CameraModule({}){
                     {previewVisible && capturedImage ? (
                         <CameraPreview photo={capturedImage}/>
                     ) : (
-                        <Camera
+                        <CameraView
                         style={{flex: 1,width:'100%',height:'100%'}}
                         ref={cameraRef}
+                        facing={facing}
                         >
                             <View
                                 style={{
@@ -186,7 +194,7 @@ export default function CameraModule({}){
                                     />
                             </View>
                             </View>
-                        </Camera>
+                        </CameraView>
                     )}
                 </View>
             ) : (

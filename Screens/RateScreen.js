@@ -68,7 +68,7 @@ export default function RateScreen({ navigation, route }) {
   const [allowableDistance, setAllowableDistance] = useState(100);
 
   const saveGPS = async() => {
-    let location = await Location.getCurrentPositionAsync({});
+    let location = await Location.getCurrentPositionAsync({accuracy: Location.Accuracy.High});
     if( location?.coords){
       if(branchValue != null){
         const branchLocation = locations[branchValue]
@@ -186,7 +186,8 @@ export default function RateScreen({ navigation, route }) {
       if(rateAllowable || !checkLocation){
         navigation.navigate("RateInfo")
       }else{
-        alert(`you are ${distanceToBranch}m away from your distnation, the allowable distance is ${allowableDistance}m , you'er not allowed`)
+        alert(`انت بعيد ${distanceToBranch}م عن الوجهة المدخلة. النطاق المسموح به ${allowableDistance}م. غير مسموح بعمل التقييم`)
+        // alert(`you are ${distanceToBranch}m away from your distnation, the allowable distance is ${allowableDistance}m , you'er not allowed`)
       }
     }
   }
@@ -574,7 +575,7 @@ export default function RateScreen({ navigation, route }) {
       <View
         style={styles.screen}
       >
-        <Slider data={ratedata} changeData={changeData} username={username} branchValue={branchValue} time={time} date={date} names={names}/>
+        <Slider data={ratedata} changeData={changeData} username={username} branchValue={branchValue} time={time} date={date} names={names} branchLocation={locations[branchValue]} allowableDistance={allowableDistance} checkLocation={checkLocation}/>
       </View>
     )
   }
